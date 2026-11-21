@@ -46,6 +46,13 @@ function handleRequest(e, method) {
     let params = {};
     if (e && e.parameter) {
       params = Object.assign({}, e.parameter);
+      // Dukungan payload JSON via GET query parameter data / payload (Ultra-reliable CORS bypass)
+      if (params.payload) {
+        try {
+          const parsed = JSON.parse(params.payload);
+          params = Object.assign(params, parsed);
+        } catch (err) {}
+      }
     }
 
     // Jika request POST memiliki body JSON (application/json)

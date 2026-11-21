@@ -60,14 +60,24 @@ export class ApiService {
         const queryParams = new URLSearchParams({ action, ...payload }).toString();
         fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + queryParams;
       } else {
-        // Kirim sebagai POST body JSON
+        // Kirim sebagai POST body JSON dengan fallback ke payload encoded URL jika diperlukan
         options.headers = {
           'Content-Type': 'text/plain;charset=utf-8' // Menghindari CORS preflight issue di GAS
         };
         options.body = JSON.stringify({ action, ...payload });
       }
 
-      const response = await fetch(fetchUrl, options);
+      let response;
+      try {
+        response = await fetch(fetchUrl, options);
+      } catch (postErr) {
+        // Fallback otomatis ke GET dengan payload query string jika POST diblokir CORS/redirect browser
+        console.log('[ApiService] Mencoba fallback request GET dengan payload query string...');
+        const fallbackUrl = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 
+          new URLSearchParams({ action, payload: JSON.stringify(payload) }).toString();
+        response = await fetch(fallbackUrl, { method: 'GET', redirect: 'follow' });
+      }
+
       const json = await response.json();
 
       if (json.status === 'success') {
