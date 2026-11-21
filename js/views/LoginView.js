@@ -32,30 +32,12 @@ export class LoginView {
             <p class="text-[11px] text-slate-500">${branchSubtitle}</p>
           </div>
 
-          <!-- Quick Login Preset Badges (1-Tap Switch) -->
-          <div class="mb-5 bg-[#F8FCF9] p-3 rounded-2xl border border-emerald-100">
-            <p class="text-[11px] font-bold text-[#0B5834] uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#FEDE00] border border-[#0B5834] animate-pulse"></span>
-              Pilih Akses Cepat (1-Klik):
-            </p>
-            <div class="grid grid-cols-2 gap-2">
-              <button type="button" id="btn-preset-cashier" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:border-[#0B5834] hover:text-[#0B5834] active:scale-95 transition-all shadow-sm">
-                <span class="text-xs font-black text-[#0B5834]">Pak Riza Lahmadi</span>
-                <span class="text-[10px] text-[#63B846] font-medium">Staf Kasir (PIN: 1234)</span>
-              </button>
-              <button type="button" id="btn-preset-admin" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-amber-200 text-slate-700 hover:border-[#E31E24] hover:text-[#E31E24] active:scale-95 transition-all shadow-sm">
-                <span class="text-xs font-black text-[#E31E24]">Pak Faik</span>
-                <span class="text-[10px] text-amber-700 font-medium">Owner / Admin</span>
-              </button>
-            </div>
-          </div>
-
           <!-- Login Form Manual -->
           <form id="form-login" class="space-y-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Username / Nama Staf</label>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Username / Nama Kasir</label>
               <div class="relative">
-                <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-sm font-medium text-slate-800 transition-all outline-none" placeholder="riza atau admin" required>
+                <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#0B5834] focus:ring-2 focus:ring-[#0B5834]/20 text-sm font-medium text-slate-800 transition-all outline-none" placeholder="Masukkan username" required autofocus>
                 <span class="absolute right-3.5 top-3 text-slate-400 text-sm">👤</span>
               </div>
             </div>
@@ -63,7 +45,7 @@ export class LoginView {
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">PIN Kasir (4 Digit) / Password</label>
               <div class="relative">
-                <input type="password" id="login-password" maxlength="20" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 text-sm font-semibold tracking-wider text-slate-800 transition-all outline-none" placeholder="••••" required>
+                <input type="password" id="login-password" maxlength="32" class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-[#0B5834] focus:ring-2 focus:ring-[#0B5834]/20 text-sm font-semibold tracking-wider text-slate-800 transition-all outline-none" placeholder="••••" required>
                 <button type="button" id="toggle-pwd" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600 text-xs font-semibold px-1">TAMPIL</button>
               </div>
             </div>
@@ -72,7 +54,7 @@ export class LoginView {
             <div id="login-alert" class="hidden p-3 rounded-xl text-xs font-medium"></div>
 
             <!-- Tombol Masuk -->
-            <button type="submit" id="btn-submit-login" class="w-full py-3.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:scale-[0.98] text-white font-black text-sm tracking-wide shadow-lg shadow-emerald-700/25 transition-all flex items-center justify-center gap-2">
+            <button type="submit" id="btn-submit-login" class="w-full py-3.5 px-4 rounded-xl bg-[#0B5834] hover:bg-[#084428] active:scale-[0.98] text-white font-black text-sm tracking-wide shadow-lg shadow-[#0B5834]/25 transition-all flex items-center justify-center gap-2">
               <span>MASUK KE SISTEM KASIR</span>
               <span>➔</span>
             </button>
@@ -103,20 +85,6 @@ export class LoginView {
     const passInput = root.querySelector('#login-password');
     const btnSubmit = root.querySelector('#btn-submit-login');
     const togglePwd = root.querySelector('#toggle-pwd');
-
-    // Preset Cashier
-    root.querySelector('#btn-preset-cashier')?.addEventListener('click', async () => {
-      userInput.value = 'riza';
-      passInput.value = '1234';
-      await this.doSubmit(userInput.value, passInput.value, alertBox, btnSubmit);
-    });
-
-    // Preset Admin
-    root.querySelector('#btn-preset-admin')?.addEventListener('click', async () => {
-      userInput.value = 'admin';
-      passInput.value = 'admin123';
-      await this.doSubmit(userInput.value, passInput.value, alertBox, btnSubmit);
-    });
 
     // Toggle Password Visibility
     togglePwd?.addEventListener('click', () => {
