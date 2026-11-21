@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4FBF7"/>
+      <stop offset="100%" stop-color="#E8F6EF"/>
+    </linearGradient>
+    <linearGradient id="teaLiquid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E57373" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#E57373"/>
+    </linearGradient>
+    <linearGradient id="cupReflect" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.4"/>
+      <stop offset="30%" stop-color="#FFFFFF" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.05"/>
+    </linearGradient>
+    <filter id="cupShadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#146C36" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Clean Background Card -->
+  <rect width="400" height="400" rx="28" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle circular backdrop -->
+  <circle cx="200" cy="180" r="140" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="200" cy="180" r="125" fill="#4CAF50" opacity="0.08"/>
+
+  <!-- Badge Top Right -->
+  <g transform="translate(265, 24)">
+    <rect width="115" height="30" rx="15" fill="#D9232E"/>
+    <text x="57" y="19" font-family="'Poppins', sans-serif" font-weight="700" font-size="12" fill="#FFFFFF" text-anchor="middle">Segar</text>
+  </g>
+
+  <!-- Cup + Drink Illustration -->
+  <g filter="url(#cupShadow)" transform="translate(0, 0)">
+    <!-- Straw -->
+    <line x1="225" y1="50" x2="185" y2="280" stroke="#FFD600" stroke-width="14" stroke-linecap="round"/>
+    <line x1="225" y1="50" x2="215" y2="120" stroke="#E67E22" stroke-width="14" stroke-linecap="round" stroke-dasharray="10 14"/>
+
+    <!-- Plastic Cup Body (Trapezoid) -->
+    <!-- Cup Outline / Clear Plastic Background -->
+    <path d="M 125 125 L 275 125 L 250 310 C 248 318, 242 324, 232 324 L 168 324 C 158 324, 152 318, 150 310 Z" fill="#FFFFFF" opacity="0.6"/>
+
+    <!-- Liquid Fill -->
+    <path d="M 129 155 Q 200 150 271 155 L 250 308 C 248 316, 243 320, 234 320 L 166 320 C 157 320, 152 316, 150 308 Z" fill="url(#teaLiquid)"/>
+
+    <!-- Ice Cubes inside liquid -->
+    <!-- Ice 1 -->
+    <rect x="150" y="170" width="36" height="34" rx="7" fill="#FFFFFF" opacity="0.55" transform="rotate(12 168 187)"/>
+    <rect x="153" y="173" width="20" height="18" rx="4" fill="#FFFFFF" opacity="0.4" transform="rotate(12 168 187)"/>
+
+    <!-- Ice 2 -->
+    <rect x="205" y="185" width="40" height="36" rx="7" fill="#FFFFFF" opacity="0.6" transform="rotate(-15 225 203)"/>
+    
+    <!-- Ice 3 -->
+    <rect x="175" y="235" width="34" height="32" rx="6" fill="#FFFFFF" opacity="0.5" transform="rotate(25 192 251)"/>
+
+    <!-- Teh Poci Cup Logo Seal Sticker -->
+    <circle cx="200" cy="225" r="32" fill="#FFFFFF" opacity="0.95" stroke="#146C36" stroke-width="2"/>
+    <circle cx="200" cy="225" r="28" fill="#146C36"/>
+    <!-- Small Teapot Symbol on Cup -->
+    <circle cx="200" cy="225" r="14" fill="#D9232E"/>
+    <text x="200" y="222" font-family="'Arial Black', sans-serif" font-weight="900" font-size="8" fill="#FFD600" text-anchor="middle">TEH</text>
+    <text x="200" y="230" font-family="'Arial Black', sans-serif" font-weight="900" font-size="8" fill="#FFFFFF" text-anchor="middle">POCI</text>
+
+    <!-- Cup Rim & Lid Seal Film -->
+    <ellipse cx="200" cy="125" rx="76" ry="12" fill="#FFFFFF" opacity="0.95" stroke="#146C36" stroke-width="2"/>
+    <ellipse cx="200" cy="123" rx="74" ry="10" fill="#FFD600" opacity="0.8"/>
+    <ellipse cx="200" cy="123" rx="65" ry="7" fill="#146C36"/>
+
+    <!-- Cup Gloss Reflections -->
+    <path d="M 132 155 L 146 155 L 160 305 L 152 305 Z" fill="url(#cupReflect)"/>
+  </g>
+
+  <!-- Mint / Flavor Garnish on Rim -->
+  <g transform="translate(130, 95)">
+    <path d="M 15 15 C 5 2, 28 -8, 38 12 C 28 20, 20 25, 15 15 Z" fill="#55A630"/>
+    <path d="M 15 15 C 2 20, -5 38, 12 40 C 20 32, 22 22, 15 15 Z" fill="#76B82A"/>
+    <line x1="15" y1="15" x2="30" y2="10" stroke="#FFFFFF" stroke-width="1" opacity="0.6"/>
+  </g>
+
+  <!-- Product Label & Price Bottom Banner -->
+  <g transform="translate(20, 328)">
+    <rect width="360" height="52" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <text x="20" y="32" font-family="'Poppins', sans-serif" font-weight="700" font-size="16" fill="#1E293B">Guava Tea</text>
+    <g transform="translate(245, 10)">
+      <rect width="95" height="32" rx="10" fill="#E8F5E9"/>
+      <text x="47" y="21" font-family="'Poppins', sans-serif" font-weight="800" font-size="14" fill="#146C36" text-anchor="middle">Rp 6.000</text>
+    </g>
+  </g>
+</svg>

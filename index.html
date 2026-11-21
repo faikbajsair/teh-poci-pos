@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Teh Poci POS — Cabang Limus Pratama Regensi</title>
+  
+  <!-- SEO & Brand Meta Tags -->
+  <meta name="description" content="Aplikasi Web Point of Sale (POS) dan Booth Management Teh Poci — Cabang Limus Pratama Regensi (Depan PG-TK Al-Imam). Cepat, Modern, dan Responsif.">
+  <meta name="theme-color" content="#146C36">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts: Montserrat (Logo/Brand) & Poppins (UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN (Modern, Ringan, Cepat) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            poci: {
+              green: '#146C36',
+              darkgreen: '#1B5E20',
+              leaf: '#55A630',
+              red: '#D9232E',
+              yellow: '#FFD600',
+              cream: '#FAFDFB'
+            }
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+            brand: ['Montserrat', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-[#FAFDFB] text-slate-800 antialiased min-h-screen selection:bg-emerald-200">
+  
+  <!-- Root Mount Container untuk Single Page App MVC -->
+  <div id="app"></div>
+
+  <!-- Main JavaScript App Entrypoint (ES6 Modular) -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>

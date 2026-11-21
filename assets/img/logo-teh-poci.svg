@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 140" width="100%" height="100%">
+  <defs>
+    <linearGradient id="pociGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C0392B"/>
+      <stop offset="50%" stop-color="#A93226"/>
+      <stop offset="100%" stop-color="#7B241C"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#76B82A"/>
+      <stop offset="100%" stop-color="#146C36"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#FFD600"/>
+      <stop offset="100%" stop-color="#FFA000"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Teapot Icon Emblem -->
+  <g transform="translate(15, 12)" filter="url(#shadow)">
+    <!-- Badge Background Ring -->
+    <circle cx="58" cy="58" r="56" fill="#146C36" stroke="#FFD600" stroke-width="4"/>
+    <circle cx="58" cy="58" r="48" fill="#1B5E20"/>
+
+    <!-- Steam lines -->
+    <path d="M48 30 C 44 24, 52 20, 48 14" stroke="#FFF" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.75"/>
+    <path d="M58 28 C 54 22, 62 18, 58 12" stroke="#FFF" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.85"/>
+    <path d="M68 30 C 64 24, 72 20, 68 14" stroke="#FFF" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.75"/>
+
+    <!-- Poci (Clay Teapot) Shape -->
+    <!-- Handle -->
+    <path d="M 32 50 C 18 52, 18 78, 33 82" fill="none" stroke="url(#pociGrad)" stroke-width="7" stroke-linecap="round"/>
+    
+    <!-- Spout -->
+    <path d="M 80 56 C 94 48, 98 42, 94 38 C 90 38, 82 48, 76 60 Z" fill="url(#pociGrad)"/>
+
+    <!-- Pot Body -->
+    <ellipse cx="58" cy="66" rx="26" ry="20" fill="url(#pociGrad)"/>
+    <ellipse cx="58" cy="65" rx="22" ry="16" fill="#D9232E" opacity="0.4"/>
+
+    <!-- Pot Base -->
+    <path d="M 44 84 L 72 84 L 68 88 L 48 88 Z" fill="#7B241C"/>
+
+    <!-- Pot Lid & Knob -->
+    <ellipse cx="58" cy="48" rx="16" ry="5" fill="#7B241C"/>
+    <circle cx="58" cy="42" r="4" fill="url(#goldGrad)"/>
+
+    <!-- Tea Leaves Badge Overlay -->
+    <path d="M 58 84 C 68 76, 78 82, 80 94 C 70 94, 62 90, 58 84 Z" fill="url(#leafGrad)"/>
+    <path d="M 58 84 C 52 76, 42 78, 40 88 C 48 90, 54 88, 58 84 Z" fill="#55A630"/>
+    <path d="M 58 84 L 72 90" stroke="#FFF" stroke-width="1" fill="none" opacity="0.6"/>
+  </g>
+
+  <!-- Typography: TEH POCI -->
+  <g transform="translate(145, 0)">
+    <!-- Brand Name -->
+    <text x="0" y="58" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="46" fill="#146C36" letter-spacing="1">TEH <tspan fill="#D9232E">POCI</tspan></text>
+    
+    <!-- Gold Underline / Banner -->
+    <rect x="0" y="68" width="310" height="4" rx="2" fill="url(#goldGrad)"/>
+    
+    <!-- Subtitle / Branch Tag -->
+    <text x="0" y="92" font-family="'Poppins', 'Segoe UI', sans-serif" font-weight="700" font-size="14" fill="#55A630" letter-spacing="2">ASLI • SEGAR • NIKMAT ALAMI</text>
+    
+    <!-- Location Badge -->
+    <g transform="translate(0, 102)">
+      <rect x="0" y="0" width="300" height="24" rx="12" fill="#E8F5E9" stroke="#C8E6C9" stroke-width="1"/>
+      <circle cx="12" cy="12" r="5" fill="#D9232E"/>
+      <text x="24" y="16" font-family="'Poppins', 'Segoe UI', sans-serif" font-weight="600" font-size="11" fill="#1B5E20">CABANG LIMUS PRATAMA REGENSI</text>
+    </g>
+  </g>
+</svg>

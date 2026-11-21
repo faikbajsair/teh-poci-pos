@@ -1,0 +1,18 @@
+{
+  "name": "Teh Poci POS — Cabang Limus Pratama Regensi",
+  "short_name": "Teh Poci POS",
+  "description": "Aplikasi Web Kasir & Manajemen Booth Teh Poci Cabang Limus Pratama Regensi",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#FAFDFB",
+  "theme_color": "#146C36",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
