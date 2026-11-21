@@ -173,6 +173,8 @@ export class PrintService {
 
   /**
    * Bagikan Struk Digital melalui WhatsApp ke Pelanggan
+   * Mendukung deep-link native WhatsApp di Android & iOS (tanpa refresh/reset PWA),
+   * normalisasi nomor HP otomatis (0812 / 812 -> 62812), dan WhatsApp Web di desktop.
    */
   shareViaWhatsApp(tx, customerPhone = '') {
     const brandName = this.settingsModel.get('brand_name', 'Teh Poci');
@@ -199,13 +201,54 @@ export class PrintService {
     text += `Kembali: ${this.formatRupiah(tx.cash_change)}\n\n`;
     text += `_Terima kasih atas pesanan Anda di Teh Poci! Segar & Nikmat Alami._ 🫖🍃`;
 
-    let cleanPhone = customerPhone.replace(/[^0-9]/g, '');
-    if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.slice(1);
+    // Normalisasi nomor telepon Indonesia (0812... / 812... / 62812...)
+    let cleanPhone = String(customerPhone || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62' + cleanPhone.slice(1);
+    } else if (cleanPhone.startsWith('8')) {
+      cleanPhone = '62' + cleanPhone;
+    }
 
-    const waUrl = cleanPhone 
-      ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`
-      : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    const encodedText = encodeURIComponent(text);
+    const isMobile = /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(navigator.userAgent || '');
 
-    window.open(waUrl, '_blank');
+    if (isMobile) {
+      // 1. Pada Perangkat HP: Gunakan skema URL Native (whatsapp://)
+      // Skema ini langsung membuka aplikasi WhatsApp di HP tanpa membuka browser baru
+      // dan mencegah browser PWA me-reload ke halaman awal (home/login).
+      const nativeUrl = cleanPhone 
+        ? `whatsapp://send?phone=${cleanPhone}&text=${encodedText}`
+        : `whatsapp://send?text=${encodedText}`;
+
+      // Buat elemen anchor sementara untuk men-trigger intent native OS
+      const link = document.createElement('a');
+      link.href = nativeUrl;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+
+      // Bersihkan elemen anchor
+      setTimeout(() => {
+        if (link.parentNode) link.parentNode.removeChild(link);
+      }, 500);
+
+      // Fallback: Jika setelah 2.5 detik browser masih fokus (WhatsApp native tidak terbuka),
+      // arahkan ke tautan web api.whatsapp.com
+      setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          const fallbackUrl = cleanPhone 
+            ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedText}`
+            : `https://api.whatsapp.com/send?text=${encodedText}`;
+          window.location.href = fallbackUrl;
+        }
+      }, 2500);
+    } else {
+      // 2. Pada Komputer / Laptop Desktop: Buka WhatsApp Web
+      const webUrl = cleanPhone 
+        ? `https://web.whatsapp.com/send?phone=${cleanPhone}&text=${encodedText}`
+        : `https://web.whatsapp.com/send?text=${encodedText}`;
+
+      window.open(webUrl, '_blank', 'noopener,noreferrer');
+    }
   }
 }

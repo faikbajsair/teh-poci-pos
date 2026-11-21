@@ -712,19 +712,22 @@ export class PosView {
 
       <!-- Action Buttons Cetak & WhatsApp -->
       <div class="space-y-2 mb-4">
-        <button type="button" id="btn-print-receipt-modal" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-md">
+        <button type="button" id="btn-print-receipt-modal" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-black text-xs flex items-center justify-center gap-2 shadow-md active:scale-98 transition">
           <span>🖨️ Cetak Struk (Printer Termal)</span>
         </button>
 
-        <div class="flex gap-2">
-          <input type="tel" id="input-wa-phone" placeholder="0812xxxx (No. WhatsApp)" class="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 outline-none">
-          <button type="button" id="btn-share-wa-modal" class="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1">
-            <span>Kirim WA</span>
-          </button>
-        </div>
+        <form id="form-share-wa-modal" class="space-y-1.5" onsubmit="return false;">
+          <div class="flex gap-2">
+            <input type="tel" id="input-wa-phone" placeholder="0812xxxx (No. WhatsApp)" class="flex-1 px-3 py-2.5 text-xs rounded-xl border border-slate-200 outline-none focus:border-[#25D366] font-medium">
+            <button type="submit" id="btn-share-wa-modal" class="py-2.5 px-3.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition whitespace-nowrap">
+              <span>💬 Kirim WA</span>
+            </button>
+          </div>
+          <p class="text-[10px] text-slate-400 text-left">*Bisa isi no. HP pelanggan atau langsung klik Kirim WA untuk pilih chat</p>
+        </form>
       </div>
 
-      <button type="button" id="btn-next-transaction" class="w-full py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs uppercase tracking-wider">
+      <button type="button" id="btn-next-transaction" class="w-full py-3 rounded-xl bg-[#0B5834] hover:bg-[#084428] text-white font-black text-xs uppercase tracking-wider active:scale-98 transition">
         Transaksi Baru
       </button>
     `;
@@ -735,10 +738,14 @@ export class PosView {
       this.pos.printReceipt(tx);
     });
 
-    root.querySelector('#btn-share-wa-modal')?.addEventListener('click', () => {
-      const phone = root.querySelector('#input-wa-phone').value;
+    const handleShareWa = (e) => {
+      if (e) e.preventDefault();
+      const phone = root.querySelector('#input-wa-phone')?.value || '';
       this.pos.shareWhatsApp(tx, phone);
-    });
+    };
+
+    root.querySelector('#form-share-wa-modal')?.addEventListener('submit', handleShareWa);
+    root.querySelector('#btn-share-wa-modal')?.addEventListener('click', handleShareWa);
 
     root.querySelector('#btn-next-transaction')?.addEventListener('click', () => {
       modal.classList.add('hidden');

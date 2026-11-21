@@ -207,9 +207,9 @@ export class HistoryView {
       const btnWa = e.target.closest('.btn-share-wa');
       if (btnWa) {
         const inv = btnWa.getAttribute('data-inv');
-        const phone = prompt('Masukkan Nomor WhatsApp Pelanggan (contoh: 081298765432):');
-        if (phone) {
-          this.history.shareReceiptWa(inv, phone);
+        const phone = prompt('Masukkan Nomor WhatsApp Pelanggan (contoh: 081298765432, atau kosongkan untuk langsung pilih chat di WhatsApp):');
+        if (phone !== null) {
+          this.history.shareReceiptWa(inv, phone.trim());
         }
         return;
       }
