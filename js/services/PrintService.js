@@ -80,7 +80,7 @@ export class PrintService {
           </div>
           <div style="display:flex; justify-content:space-between;">
             <span>Metode Bayar:</span>
-            <span style="font-weight:bold;">${tx.payment_method}</span>
+            <span style="font-weight:bold;">${tx.payment_method}${tx.notes && tx.payment_method === 'Transfer' ? ` (${tx.notes})` : ''}</span>
           </div>
         </div>
 

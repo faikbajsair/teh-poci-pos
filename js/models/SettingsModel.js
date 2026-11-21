@@ -61,7 +61,15 @@ export class SettingsModel {
       client_name: 'Pak Faik - Mitra Teh Poci',
       license_status: 'ACTIVE',
       license_key: 'POCI-LPR-PRO-2026',
-      qris_image_url: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=00020101021126570014ID.LINKAJA.WWW011893600914000000000002150000000000000000303UME51440014ID.CO.QRIS.WWW0215ID10200000000005204581253033605802ID5923TEH%20POCI%20LIMUS%20PRATAMA6005BOGOR61051682062070703A016304E627'
+      qris_image_url: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=00020101021126570014ID.LINKAJA.WWW011893600914000000000002150000000000000000303UME51440014ID.CO.QRIS.WWW0215ID10200000000005204581253033605802ID5923TEH%20POCI%20LIMUS%20PRATAMA6005BOGOR61051682062070703A016304E627',
+
+      // 5. Rekening Pembayaran Transfer Bank Resmi (Pak Faik)
+      bank_bsi_no: '7071810850',
+      bank_bsi_name: 'Faik',
+      bank_blu_no: '005725704200',
+      bank_blu_name: 'Faik',
+      bank_mandiri_no: '1330031045271',
+      bank_mandiri_name: 'FAIK'
     };
   }
 

@@ -312,6 +312,31 @@ export class CmsView {
             </div>
           </div>
 
+          <!-- Rekening Pembayaran Resmi Booth -->
+          <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
+            <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">Rekening Bank Transfer & QRIS Booth (Pak Faik):</span>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div class="p-2.5 bg-white rounded-xl border border-emerald-200">
+                <span class="text-[10px] font-bold text-emerald-800 uppercase block mb-1">1. Bank Syariah Indonesia (BSI)</span>
+                <input type="text" id="set-bsi-no" value="${this.settings.get('bank_bsi_no', '7071810850')}" placeholder="No. Rekening" class="w-full px-2 py-1.5 rounded-lg border border-slate-200 font-mono font-bold text-xs outline-none focus:border-emerald-500 mb-1">
+                <input type="text" id="set-bsi-name" value="${this.settings.get('bank_bsi_name', 'Faik')}" placeholder="A.n Pemilik" class="w-full px-2 py-1 rounded-lg border border-slate-200 text-[11px] outline-none">
+              </div>
+
+              <div class="p-2.5 bg-white rounded-xl border border-sky-200">
+                <span class="text-[10px] font-bold text-sky-800 uppercase block mb-1">2. Blu by BCA Digital</span>
+                <input type="text" id="set-blu-no" value="${this.settings.get('bank_blu_no', '005725704200')}" placeholder="No. Rekening" class="w-full px-2 py-1.5 rounded-lg border border-slate-200 font-mono font-bold text-xs outline-none focus:border-sky-500 mb-1">
+                <input type="text" id="set-blu-name" value="${this.settings.get('bank_blu_name', 'Faik')}" placeholder="A.n Pemilik" class="w-full px-2 py-1 rounded-lg border border-slate-200 text-[11px] outline-none">
+              </div>
+
+              <div class="p-2.5 bg-white rounded-xl border border-amber-200">
+                <span class="text-[10px] font-bold text-amber-800 uppercase block mb-1">3. Bank Mandiri</span>
+                <input type="text" id="set-mandiri-no" value="${this.settings.get('bank_mandiri_no', '1330031045271')}" placeholder="No. Rekening" class="w-full px-2 py-1.5 rounded-lg border border-slate-200 font-mono font-bold text-xs outline-none focus:border-amber-500 mb-1">
+                <input type="text" id="set-mandiri-name" value="${this.settings.get('bank_mandiri_name', 'FAIK')}" placeholder="A.n Pemilik" class="w-full px-2 py-1 rounded-lg border border-slate-200 text-[11px] outline-none">
+              </div>
+            </div>
+          </div>
+
           <div>
             <label class="block font-bold text-slate-700 mb-1">Pesan Kaki Struk (Receipt Footer)</label>
             <input type="text" id="set-receipt-footer" value="${this.settings.get('receipt_footer')}" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-600">
@@ -577,7 +602,13 @@ export class CmsView {
           address: root.querySelector('#set-address').value,
           phone: root.querySelector('#set-phone').value,
           operating_hours: root.querySelector('#set-hours').value,
-          receipt_footer: root.querySelector('#set-receipt-footer').value
+          receipt_footer: root.querySelector('#set-receipt-footer').value,
+          bank_bsi_no: root.querySelector('#set-bsi-no')?.value || '7071810850',
+          bank_bsi_name: root.querySelector('#set-bsi-name')?.value || 'Faik',
+          bank_blu_no: root.querySelector('#set-blu-no')?.value || '005725704200',
+          bank_blu_name: root.querySelector('#set-blu-name')?.value || 'Faik',
+          bank_mandiri_no: root.querySelector('#set-mandiri-no')?.value || '1330031045271',
+          bank_mandiri_name: root.querySelector('#set-mandiri-name')?.value || 'FAIK'
         };
         await this.cms.updateSettings(newSettings);
         alert('Identitas Brand & Cabang berhasil diperbarui!');

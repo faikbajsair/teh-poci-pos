@@ -437,31 +437,98 @@ export class PosView {
         ` : ''}
 
         ${this.activePaymentMethod === 'QRIS' ? `
-          <div class="text-center p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-            <p class="text-xs font-bold text-slate-700">Scan QRIS Booth Teh Poci</p>
-            <div class="w-44 h-44 mx-auto bg-white p-2 rounded-xl shadow-inner border border-slate-200 flex items-center justify-center">
+          <div class="text-center p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200 text-xs">
+              <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span>📱</span>
+                <span>QRIS Pembayaran Resmi Booth</span>
+              </span>
+              <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-[#0B5834]">A.n Faik</span>
+            </div>
+
+            <div class="w-48 h-48 mx-auto bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center">
               <img src="${qrisUrl}" alt="QRIS Code" class="w-full h-full object-contain">
             </div>
-            <p class="text-[11px] text-slate-500">Mendukung BCA, Mandiri, BRI, BNI, GoPay, OVO, ShopeePay, DANA.</p>
+
+            <p class="text-[11px] text-slate-600 font-medium">Bisa di-scan dari <strong>BSI, Blu (BCA), Mandiri, BCA Mobile, GoPay, OVO, ShopeePay, DANA</strong>, dll.</p>
+
+            <div class="pt-2 border-t border-slate-200 text-left">
+              <span class="text-[10px] font-bold text-slate-500 uppercase block mb-1.5">Atau Salin Nomor Rekening Transfer:</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+                <button type="button" class="btn-copy-acc p-2 bg-white rounded-xl border border-emerald-200 hover:border-[#0B5834] text-left transition" data-acc="7071810850" data-bank="BSI">
+                  <span class="text-[9px] font-bold text-emerald-800 uppercase block">BSI (A.n Faik)</span>
+                  <span class="font-mono font-black text-slate-900 text-xs">7071810850 📋</span>
+                </button>
+                <button type="button" class="btn-copy-acc p-2 bg-white rounded-xl border border-sky-200 hover:border-sky-600 text-left transition" data-acc="005725704200" data-bank="Blu (BCA)">
+                  <span class="text-[9px] font-bold text-sky-800 uppercase block">Blu BCA (A.n Faik)</span>
+                  <span class="font-mono font-black text-slate-900 text-xs">005725704200 📋</span>
+                </button>
+                <button type="button" class="btn-copy-acc p-2 bg-white rounded-xl border border-amber-200 hover:border-amber-600 text-left transition" data-acc="1330031045271" data-bank="Mandiri">
+                  <span class="text-[9px] font-bold text-amber-800 uppercase block">Mandiri (A.n FAIK)</span>
+                  <span class="font-mono font-black text-slate-900 text-xs">1330031045271 📋</span>
+                </button>
+              </div>
+            </div>
           </div>
         ` : ''}
 
         ${this.activePaymentMethod === 'Transfer' ? `
-          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
-            <p class="font-bold text-slate-700">Nomor Rekening Booth Resmi:</p>
-            <div class="p-2.5 bg-white rounded-xl border border-slate-200 font-mono flex justify-between items-center">
-              <div>
-                <div class="font-bold text-slate-800">BCA: 5410-892-111</div>
-                <div class="text-[10px] text-slate-500">a.n. Pak Faik (Teh Poci LPR)</div>
-              </div>
-              <span class="text-emerald-700 font-bold">Salin</span>
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5 text-xs">
+            <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+              <p class="font-bold text-slate-800 flex items-center gap-1.5">
+                <span>🏦</span>
+                <span>Pilih Rekening Tujuan Transfer Bank:</span>
+              </p>
+              <span class="text-[10px] text-slate-400">Klik kartu untuk salin</span>
             </div>
-            <div class="p-2.5 bg-white rounded-xl border border-slate-200 font-mono flex justify-between items-center">
+
+            <!-- Rekening 1: BSI -->
+            <div class="p-3 bg-white rounded-xl border border-emerald-200 hover:border-[#0B5834] transition flex items-center justify-between shadow-xs">
               <div>
-                <div class="font-bold text-slate-800">DANA / OVO: 0812-9876-5432</div>
-                <div class="text-[10px] text-slate-500">a.n. Teh Poci Limus Pratama</div>
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800">BSI</span>
+                  <span class="font-black font-mono text-slate-900 text-sm">7071810850</span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-medium mt-0.5">Bank Syariah Indonesia • A.n <strong>Faik</strong></div>
               </div>
-              <span class="text-emerald-700 font-bold">Salin</span>
+              <button type="button" class="btn-copy-acc py-1.5 px-3 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#0B5834] font-bold text-xs flex items-center gap-1 active:scale-95 transition" data-acc="7071810850" data-bank="BSI">
+                <span>📋</span>
+                <span>Salin</span>
+              </button>
+            </div>
+
+            <!-- Rekening 2: Blu (BCA) -->
+            <div class="p-3 bg-white rounded-xl border border-sky-200 hover:border-sky-500 transition flex items-center justify-between shadow-xs">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-black bg-sky-100 text-sky-800">Blu (BCA)</span>
+                  <span class="font-black font-mono text-slate-900 text-sm">005725704200</span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-medium mt-0.5">BCA Digital (Blu) • A.n <strong>Faik</strong></div>
+              </div>
+              <button type="button" class="btn-copy-acc py-1.5 px-3 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs flex items-center gap-1 active:scale-95 transition" data-acc="005725704200" data-bank="Blu (BCA)">
+                <span>📋</span>
+                <span>Salin</span>
+              </button>
+            </div>
+
+            <!-- Rekening 3: Mandiri -->
+            <div class="p-3 bg-white rounded-xl border border-amber-200 hover:border-amber-500 transition flex items-center justify-between shadow-xs">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800">MANDIRI</span>
+                  <span class="font-black font-mono text-slate-900 text-sm">1330031045271</span>
+                </div>
+                <div class="text-[11px] text-slate-500 font-medium mt-0.5">Bank Mandiri • A.n <strong>FAIK</strong></div>
+              </div>
+              <button type="button" class="btn-copy-acc py-1.5 px-3 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs flex items-center gap-1 active:scale-95 transition" data-acc="1330031045271" data-bank="Mandiri">
+                <span>📋</span>
+                <span>Salin</span>
+              </button>
+            </div>
+
+            <div id="copy-bank-toast" class="hidden text-center text-[#0B5834] bg-emerald-50 py-1.5 px-3 rounded-lg text-xs font-bold border border-emerald-200 animate-pulse">
+              ✓ Nomor rekening berhasil disalin!
             </div>
           </div>
         ` : ''}
@@ -612,6 +679,26 @@ export class PosView {
         const inputCash = root.querySelector('#input-cash-received');
         if (inputCash) inputCash.value = this.tx.cashReceived;
         this.updateCashChangeDisplay(root);
+        return;
+      }
+
+      // Salin Nomor Rekening Transfer Bank / QRIS
+      const btnCopy = e.target.closest('.btn-copy-acc');
+      if (btnCopy) {
+        const acc = btnCopy.getAttribute('data-acc');
+        const bank = btnCopy.getAttribute('data-bank');
+        if (acc) {
+          navigator.clipboard?.writeText(acc).catch(() => {});
+          const toast = root.querySelector('#copy-bank-toast');
+          if (toast) {
+            toast.textContent = `✓ No. Rekening ${bank || ''} (${acc}) berhasil disalin!`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast?.classList.add('hidden'), 2500);
+          }
+          if (bank) {
+            this.tx.orderNotes = `Transfer Bank ${bank}`;
+          }
+        }
         return;
       }
 
