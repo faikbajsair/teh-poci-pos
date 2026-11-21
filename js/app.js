@@ -16,6 +16,7 @@ import { InventoryModel } from './models/InventoryModel.js';
 import { ApiService } from './services/ApiService.js';
 import { PrintService } from './services/PrintService.js';
 import { SoundService } from './services/SoundService.js';
+import { QrCodeService } from './services/QrCodeService.js';
 
 // 3. Import Controllers
 import { AuthController } from './controllers/AuthController.js';
@@ -50,6 +51,7 @@ class App {
     this.apiService = new ApiService(this.settingsModel);
     this.printService = new PrintService(this.settingsModel);
     this.soundService = new SoundService(this.settingsModel);
+    this.qrCodeService = new QrCodeService(this.settingsModel);
 
     // Inisialisasi Controllers
     this.authController = new AuthController(
@@ -101,7 +103,8 @@ class App {
       this.settingsModel,
       this.apiService,
       (route) => this.navigate(route),
-      this.soundService
+      this.soundService,
+      this.qrCodeService
     );
     this.historyView = new HistoryView(
       this.historyController,

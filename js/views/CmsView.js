@@ -648,6 +648,16 @@ export class CmsView {
             </div>
           </div>
 
+          <!-- Pengaturan String / Payload QRIS Booth -->
+          <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">Payload / String QRIS Standar (EMVCo):</span>
+              <span class="text-[10px] text-emerald-700 font-bold">✓ Render Lokal (Anti-Blokir / Bebas Rusak)</span>
+            </div>
+            <textarea id="set-qris-payload" rows="2" class="w-full p-2.5 rounded-xl border border-slate-200 font-mono text-[11px] outline-none focus:border-emerald-600">${this.settings.get('qris_payload', '00020101021126570014ID.LINKAJA.WWW011893600914000000000002150000000000000000303UME51440014ID.CO.QRIS.WWW0215ID10200000000005204581253033605802ID5923TEH%20POCI%20LIMUS%20PRATAMA6005BOGOR61051682062070703A016304E627')}</textarea>
+            <p class="text-[10px] text-slate-400">QRIS digenerate langsung oleh browser di kasir secara instan, tajam, dan dapat discan seluruh e-wallet & mobile banking.</p>
+          </div>
+
           <!-- Pengaturan Soundbox Notifikasi Suara Pembayaran -->
           <div class="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-3">
             <div class="flex items-center justify-between">
@@ -1109,7 +1119,8 @@ export class CmsView {
           bank_blu_no: root.querySelector('#set-blu-no')?.value || '005725704200',
           bank_blu_name: root.querySelector('#set-blu-name')?.value || 'Faik',
           bank_mandiri_no: root.querySelector('#set-mandiri-no')?.value || '1330031045271',
-          bank_mandiri_name: root.querySelector('#set-mandiri-name')?.value || 'FAIK'
+          bank_mandiri_name: root.querySelector('#set-mandiri-name')?.value || 'FAIK',
+          qris_payload: root.querySelector('#set-qris-payload')?.value || ''
         };
         await this.cms.updateSettings(newSettings);
         alert('Identitas Brand & Rekening berhasil disimpan!');

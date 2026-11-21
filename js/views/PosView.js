@@ -4,7 +4,7 @@
  * Desain Mobile-First & Desktop, responsif, berkecepatan tinggi, navigasi intuitif.
  */
 export class PosView {
-  constructor(posController, productModel, transactionModel, userModel, settingsModel, apiService, navigateFn, soundService = null) {
+  constructor(posController, productModel, transactionModel, userModel, settingsModel, apiService, navigateFn, soundService = null, qrCodeService = null) {
     this.pos = posController;
     this.products = productModel;
     this.tx = transactionModel;
@@ -13,6 +13,7 @@ export class PosView {
     this.api = apiService;
     this.navigate = navigateFn;
     this.soundService = soundService;
+    this.qr = qrCodeService;
 
     this.isCartOpenMobile = false;
     this.activePaymentMethod = 'Tunai';
@@ -457,16 +458,38 @@ export class PosView {
 
         ${this.activePaymentMethod === 'QRIS' ? `
           <div class="text-center p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-200 text-xs">
-              <span class="font-bold text-slate-800 flex items-center gap-1.5">
-                <span>📱</span>
-                <span>QRIS Pembayaran Resmi Booth</span>
-              </span>
-              <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-[#0B5834]">A.n Faik</span>
-            </div>
+            
+            <!-- Kartu Standee QRIS Resmi Standar Indonesia -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm max-w-[280px] mx-auto text-center space-y-2.5">
+              
+              <!-- Header QRIS Nasional -->
+              <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded bg-red-600 text-white font-black text-xs tracking-wider">QRIS</span>
+                  <span class="text-[9px] font-bold text-slate-500 uppercase leading-none text-left">Pembayaran<br>Nasional</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] font-black text-slate-800 block">GPN</span>
+                  <span class="text-[8px] font-bold text-slate-400">ASPI</span>
+                </div>
+              </div>
 
-            <div class="w-48 h-48 mx-auto bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-center">
-              <img src="${qrisUrl}" alt="QRIS Code" class="w-full h-full object-contain">
+              <!-- Info Merchant & Pemilik Booth -->
+              <div>
+                <h4 class="font-black text-slate-900 text-xs uppercase tracking-tight">${this.settings.get('branch_name', 'Teh Poci Limus Pratama')}</h4>
+                <p class="text-[10px] text-slate-500 font-medium">NMID: ID1020000000000 • A.n <strong>Faik</strong></p>
+              </div>
+
+              <!-- QR Code Canvas Target (100% Client-Side Render Tanpa Beban Server Eksternal) -->
+              <div class="w-48 h-48 mx-auto bg-white p-2 rounded-xl border border-slate-200 flex items-center justify-center overflow-hidden">
+                <div id="qris-code-target" class="w-full h-full flex items-center justify-center"></div>
+              </div>
+
+              <!-- Tag Nominal Tagihan -->
+              <div class="bg-emerald-50 border border-emerald-200 rounded-xl py-1 px-2.5">
+                <span class="text-[10px] text-slate-500 block">Total Tagihan:</span>
+                <span class="text-sm font-black text-emerald-800">${this.formatRp(total)}</span>
+              </div>
             </div>
 
             <p class="text-[11px] text-slate-600 font-medium">Bisa di-scan dari <strong>BSI, Blu (BCA), Mandiri, BCA Mobile, GoPay, OVO, ShopeePay, DANA</strong>, dll.</p>
@@ -686,7 +709,12 @@ export class PosView {
         this.activePaymentMethod = method;
         this.pos.setPaymentMethod(method);
         const modalContent = root.querySelector('#modal-checkout .bg-white');
-        if (modalContent) modalContent.innerHTML = this.renderCheckoutModalContent();
+        if (modalContent) {
+          modalContent.innerHTML = this.renderCheckoutModalContent();
+          if (method === 'QRIS') {
+            this.renderQrisCode(root);
+          }
+        }
         return;
       }
 
@@ -908,6 +936,18 @@ export class PosView {
     this.pos.setPaymentMethod(this.activePaymentMethod);
     modal.querySelector('.bg-white').innerHTML = this.renderCheckoutModalContent();
     modal.classList.remove('hidden');
+    if (this.activePaymentMethod === 'QRIS') {
+      this.renderQrisCode(root);
+    }
+  }
+
+  // Render QR Code QRIS secara langsung pada elemen canvas target
+  renderQrisCode(root) {
+    const target = root.querySelector('#qris-code-target');
+    if (!target) return;
+    const total = this.tx.getTotalAmount();
+    const payload = this.qr?.getQrisPayload(total) || '00020101021126570014ID.LINKAJA.WWW011893600914000000000002150000000000000000303UME51440014ID.CO.QRIS.WWW0215ID10200000000005204581253033605802ID5923TEH%20POCI%20LIMUS%20PRATAMA6005BOGOR61051682062070703A016304E627';
+    this.qr?.renderQr(target, payload, 180);
   }
 
   refreshProductGrid(root) {
