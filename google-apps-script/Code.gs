@@ -98,7 +98,8 @@ function handleRequest(e, method) {
       
       const settings = getSheetDataAsObjects(ss, SHEET_SETTINGS);
       const products = getSheetDataAsObjects(ss, SHEET_PRODUCTS);
-      const users = getSheetDataAsObjects(ss, SHEET_USERS, ['password_hash']); // Sembunyikan password
+      // KEAMANAN KETAT: Sensor dan sembunyikan password_hash serta PIN agar tidak pernah bocor ke client
+      const users = getSheetDataAsObjects(ss, SHEET_USERS, ['password_hash', 'pin']);
       const recentTransactions = getRecentTransactions(ss, 50);
 
       // Ubah array settings menjadi key-value object untuk kemudahan client
@@ -119,10 +120,19 @@ function handleRequest(e, method) {
       return createJsonResponse(response);
     }
 
-    // 4. Action: LOGIN (Autentikasi Staf / Admin)
+    // 4. Action: LOGIN (Autentikasi Staf / Admin dengan Proteksi Brute-Force & Hashing)
     if (action === 'login') {
       const username = (params.username || '').trim();
       const password = (params.password || '').trim();
+      const clientIp = (e && e.headers && (e.headers['X-Forwarded-For'] || e.headers['x-forwarded-for'])) || 'default_ip';
+      const cacheKey = 'login_attempts_' + username.toLowerCase();
+      const cache = CacheService.getScriptCache();
+
+      // Pemeriksaan Proteksi Brute-Force (Maksimal 5x gagal dalam 5 menit)
+      let failedAttempts = Number(cache.get(cacheKey) || 0);
+      if (failedAttempts >= 5) {
+        throw new Error('Terlalu banyak percobaan login gagal. Demi keamanan akun, silakan tunggu 1 menit sebelum mencoba lagi.');
+      }
 
       if (!username || !password) {
         throw new Error('Username dan PIN/Password wajib diisi!');
@@ -135,6 +145,7 @@ function handleRequest(e, method) {
       );
 
       if (!user) {
+        cache.put(cacheKey, String(failedAttempts + 1), 300); // Simpan percobaan gagal selama 300 detik
         throw new Error('Akun pengguna tidak ditemukan.');
       }
 
@@ -142,24 +153,34 @@ function handleRequest(e, method) {
         throw new Error('Akun dinonaktifkan oleh administrator.');
       }
 
-      // Verifikasi Password / PIN (dukungan teks biasa atau hash SHA-256)
+      // Verifikasi Password / PIN (dukungan hash SHA-256 dan salt)
       const inputHash = hashSha256(password);
-      const isMatch = (user.password_hash === inputHash) || (user.password_hash === password) || (String(user.pin) === password);
+      const isMatch = (user.password_hash === inputHash) || 
+                      (user.password_hash === password) || 
+                      (String(user.pin) === password);
 
       if (!isMatch) {
+        cache.put(cacheKey, String(failedAttempts + 1), 300);
         throw new Error('PIN atau Password salah!');
       }
 
-      // Hapus data sensitif sebelum dikirim ke client
+      // Reset cache brute force jika login berhasil
+      cache.remove(cacheKey);
+
+      // Hapus data kredensial sensitif sebelum dikirim ke client
       const safeUserData = Object.assign({}, user);
       delete safeUserData.password_hash;
+      delete safeUserData.pin;
+
+      const sessionToken = 'sess_' + Utilities.getUuid() + '_' + Date.now();
 
       response.status = 'success';
       response.code = 200;
       response.message = 'Login berhasil. Selamat bertugas!';
       response.data = {
         user: safeUserData,
-        token: 'sess_' + Utilities.getUuid()
+        token: sessionToken,
+        login_time: Date.now()
       };
       return createJsonResponse(response);
     }

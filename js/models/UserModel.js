@@ -2,21 +2,35 @@
  * UserModel.js
  * Model untuk mengelola state autentikasi, profil user aktif, dan hak akses (Role Guard).
  */
+import { SecurityService } from '../services/SecurityService.js';
+
 export class UserModel {
   constructor() {
     this.currentUser = null;
     this.token = null;
+    this.loginTime = null;
     this.loadSession();
   }
 
-  // Muat sesi tersimpan dari localStorage
+  // Muat sesi tersimpan dari localStorage dengan verifikasi masa berlaku
   loadSession() {
     try {
       const savedUser = localStorage.getItem('tehpoci_user');
       const savedToken = localStorage.getItem('tehpoci_token');
+      const savedTime = localStorage.getItem('tehpoci_login_time');
+
       if (savedUser && savedToken) {
-        this.currentUser = JSON.parse(savedUser);
+        // Cek apakah sesi kadaluarsa (> 12 jam)
+        if (SecurityService.isSessionExpired(savedTime, 12)) {
+          console.warn('[Security] Sesi login telah kadaluarsa demi keamanan.');
+          this.clearSession();
+          return;
+        }
+
+        const decryptedUser = SecurityService.decryptData(savedUser);
+        this.currentUser = JSON.parse(decryptedUser);
         this.token = savedToken;
+        this.loginTime = savedTime;
       }
     } catch (e) {
       console.warn('Gagal memuat sesi pengguna:', e);
@@ -24,20 +38,26 @@ export class UserModel {
     }
   }
 
-  // Simpan sesi login baru
-  setSession(user, token) {
+  // Simpan sesi login baru dengan enkripsi
+  setSession(user, token, loginTime = null) {
     this.currentUser = user;
     this.token = token || ('sess_' + Date.now());
-    localStorage.setItem('tehpoci_user', JSON.stringify(this.currentUser));
+    this.loginTime = loginTime || Date.now();
+
+    const encryptedUser = SecurityService.encryptData(JSON.stringify(this.currentUser));
+    localStorage.setItem('tehpoci_user', encryptedUser);
     localStorage.setItem('tehpoci_token', this.token);
+    localStorage.setItem('tehpoci_login_time', this.loginTime.toString());
   }
 
   // Hapus sesi (Logout)
   clearSession() {
     this.currentUser = null;
     this.token = null;
+    this.loginTime = null;
     localStorage.removeItem('tehpoci_user');
     localStorage.removeItem('tehpoci_token');
+    localStorage.removeItem('tehpoci_login_time');
   }
 
   // Cek apakah user sedang login
