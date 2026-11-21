@@ -1,20 +1,24 @@
 /**
  * CmsView.js
  * Dashboard Pemilik/Admin (Pak Faik) & CMS Customizer (White-Label / Multi-Tenant Ready):
- * Analisis Omzet & Produk Terlaris, Manajemen Brand/Cabang, Tema Warna (Appearance),
- * Katalog Menu & Harga Minuman, serta Integrasi Google Spreadsheet.
+ * Analisis Omzet & Laba Rugi Lengkap, Produk Terlaris & Kurang Laku, Update Stok Bahan Baku,
+ * Saran & Rekomendasi Keputusan Bisnis Owner, Manajemen Brand/Cabang, Tema Warna, Katalog Menu, & Google Sheets.
  */
 export class CmsView {
-  constructor(cmsController, settingsModel, productModel, userModel, apiService, navigateFn) {
+  constructor(cmsController, settingsModel, productModel, userModel, apiService, navigateFn, inventoryModel = null) {
     this.cms = cmsController;
     this.settings = settingsModel;
     this.products = productModel;
     this.user = userModel;
     this.api = apiService;
     this.navigate = navigateFn;
+    this.inventory = inventoryModel;
 
-    this.activeTab = 'dashboard'; // 'dashboard' | 'brand' | 'appearance' | 'menu' | 'sheets'
+    this.activeTab = 'dashboard'; // 'dashboard' | 'inventory' | 'brand' | 'appearance' | 'menu' | 'sheets'
     this.editingProduct = null;
+    this.editingInventory = null;
+    this.inventoryFilterCategory = 'Semua';
+    this.inventorySearch = '';
   }
 
   formatRp(amount) {
@@ -42,11 +46,11 @@ export class CmsView {
                 <span>Kembali ke POS</span>
               </button>
               <div class="flex items-center gap-2.5">
-                <img src="assets/img/logo-teh-poci.png" alt="Logo Teh Poci" class="h-9 w-auto object-contain">
+                <img src="${this.settings.get('logo_url', 'assets/img/logo-teh-poci.png')}" alt="Logo Teh Poci" class="h-9 w-auto object-contain">
                 <div>
                   <h1 class="text-base font-black text-slate-900 flex items-center gap-2">
                     <span>Dashboard Pemilik & CMS</span>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200">ADMIN</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200">PAK FAIK (OWNER)</span>
                   </h1>
                   <p class="text-xs text-slate-500">${brandName} — ${branchName}</p>
                 </div>
@@ -54,6 +58,11 @@ export class CmsView {
             </div>
 
             <div class="flex items-center gap-2">
+              <button id="btn-sync-all-gas" class="p-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#0B5834] font-bold text-xs flex items-center gap-1.5 transition border border-emerald-200 shadow-xs">
+                <span id="cms-sync-spin">🔄</span>
+                <span class="hidden sm:inline">Sinkronkan Data Sheets</span>
+              </button>
+
               <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isGasActive ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
                 <span class="w-2 h-2 rounded-full ${isGasActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}"></span>
                 <span>${isGasActive ? 'Google Sheets Terhubung' : 'Demo Mode'}</span>
@@ -63,23 +72,27 @@ export class CmsView {
 
           <!-- TAB NAVIGATION BAR -->
           <div class="max-w-7xl mx-auto px-4 flex items-center gap-1 overflow-x-auto border-t border-slate-100 text-xs font-bold text-slate-600 no-scrollbar">
-            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'dashboard' ? 'border-emerald-600 text-emerald-800 font-black' : 'border-transparent hover:text-slate-900'}" data-tab="dashboard">
+            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'dashboard' ? 'border-[#0B5834] text-[#0B5834] font-black' : 'border-transparent hover:text-slate-900'}" data-tab="dashboard">
               <span>📊</span>
-              <span>Ringkasan Omzet</span>
+              <span>Laporan Penjualan & Laba Rugi</span>
             </button>
-            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'brand' ? 'border-emerald-600 text-emerald-800 font-black' : 'border-transparent hover:text-slate-900'}" data-tab="brand">
+            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'inventory' ? 'border-[#0B5834] text-[#0B5834] font-black' : 'border-transparent hover:text-slate-900'}" data-tab="inventory">
+              <span>📦</span>
+              <span>Stok Bahan Baku</span>
+            </button>
+            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'brand' ? 'border-[#0B5834] text-[#0B5834] font-black' : 'border-transparent hover:text-slate-900'}" data-tab="brand">
               <span>🏪</span>
-              <span>Identitas Brand & Cabang</span>
+              <span>Identitas Brand & Rekening</span>
             </button>
-            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'appearance' ? 'border-emerald-600 text-emerald-800 font-black' : 'border-transparent hover:text-slate-900'}" data-tab="appearance">
+            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'appearance' ? 'border-[#0B5834] text-[#0B5834] font-black' : 'border-transparent hover:text-slate-900'}" data-tab="appearance">
               <span>🎨</span>
               <span>Tema & Tampilan (Appearance)</span>
             </button>
-            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'menu' ? 'border-emerald-600 text-emerald-800 font-black' : 'border-transparent hover:text-slate-900'}" data-tab="menu">
+            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'menu' ? 'border-[#0B5834] text-[#0B5834] font-black' : 'border-transparent hover:text-slate-900'}" data-tab="menu">
               <span>🫖</span>
               <span>Katalog Menu & Harga</span>
             </button>
-            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'sheets' ? 'border-emerald-600 text-emerald-800 font-black' : 'border-transparent hover:text-slate-900'}" data-tab="sheets">
+            <button class="cms-tab-btn py-3 px-3.5 border-b-2 whitespace-nowrap transition flex items-center gap-1.5 ${this.activeTab === 'sheets' ? 'border-[#0B5834] text-[#0B5834] font-black' : 'border-transparent hover:text-slate-900'}" data-tab="sheets">
               <span>🔗</span>
               <span>Integrasi Spreadsheet & Lisensi</span>
             </button>
@@ -137,7 +150,51 @@ export class CmsView {
               </div>
               <div class="flex gap-2 pt-3 border-t border-slate-100">
                 <button type="button" id="btn-cancel-product-modal" class="flex-1 py-2.5 rounded-xl bg-slate-100 font-bold text-slate-600">Batal</button>
-                <button type="submit" class="flex-1 py-2.5 rounded-xl bg-emerald-700 text-white font-bold shadow-md">Simpan Menu</button>
+                <button type="submit" class="flex-1 py-2.5 rounded-xl bg-[#0B5834] text-white font-bold shadow-md">Simpan Menu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- MODAL TAMBAH / EDIT BAHAN BAKU -->
+        <div id="modal-edit-inventory" class="hidden fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl">
+            <h3 class="font-black text-slate-900 text-base mb-3" id="modal-inv-title">Kelola Stok Bahan Baku</h3>
+            <form id="form-inv-edit" class="space-y-3 text-xs">
+              <input type="hidden" id="inv-edit-id">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Nama Bahan Baku / Kemasan</label>
+                <input type="text" id="inv-edit-name" required placeholder="Contoh: Daun Teh Melati Poci" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold outline-none focus:border-emerald-500">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Kategori Bahan</label>
+                  <select id="inv-edit-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold outline-none focus:border-emerald-500">
+                    <option value="Bahan Utama">Bahan Utama</option>
+                    <option value="Kemasan">Kemasan</option>
+                    <option value="Sirup Buah">Sirup Buah</option>
+                    <option value="Powder Rasa">Powder Rasa</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Satuan Stok</label>
+                  <input type="text" id="inv-edit-unit" required placeholder="Kg / Pack / Roll / Botol" class="w-full px-3 py-2 rounded-xl border border-slate-200 outline-none focus:border-emerald-500">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Jumlah Sisa Stok Fisik</label>
+                  <input type="number" id="inv-edit-stock" required class="w-full px-3 py-2 rounded-xl border border-slate-200 font-black text-emerald-800 text-sm outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Batas Minimal (Peringatan)</label>
+                  <input type="number" id="inv-edit-min" required class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold outline-none focus:border-emerald-500">
+                </div>
+              </div>
+              <div class="flex gap-2 pt-3 border-t border-slate-100">
+                <button type="button" id="btn-cancel-inv-modal" class="flex-1 py-2.5 rounded-xl bg-slate-100 font-bold text-slate-600">Batal</button>
+                <button type="submit" class="flex-1 py-2.5 rounded-xl bg-[#0B5834] text-white font-bold shadow-md">Simpan Stok</button>
               </div>
             </form>
           </div>
@@ -152,6 +209,8 @@ export class CmsView {
   renderActiveTabContent(metrics) {
     if (this.activeTab === 'dashboard') {
       return this.renderDashboardTab(metrics);
+    } else if (this.activeTab === 'inventory') {
+      return this.renderInventoryTab();
     } else if (this.activeTab === 'brand') {
       return this.renderBrandTab();
     } else if (this.activeTab === 'appearance') {
@@ -163,103 +222,354 @@ export class CmsView {
     }
   }
 
-  // TAB 1: EXECUTIVE DASHBOARD
+  // TAB 1: EXECUTIVE DASHBOARD & LAPORAN LABA RUGI
   renderDashboardTab(metrics) {
+    const period = this.cms.selectedPeriod;
+
     return `
       <div class="space-y-6">
-        <!-- KPI CARDS -->
+        
+        <!-- BAR FILTER PERIODE WAKTU -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <div>
+            <h2 class="text-sm font-black text-slate-900 flex items-center gap-2">
+              <span>Laporan Kinerja & Profitabilitas Booth</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">Real-time</span>
+            </h2>
+            <p class="text-xs text-slate-500">Analisis menyeluruh omzet, beban HPP bahan baku, estimasi laba bersih, dan produk terlaris.</p>
+          </div>
+
+          <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl text-xs font-bold self-stretch sm:self-auto justify-between">
+            <button type="button" class="btn-period px-3 py-1.5 rounded-lg transition ${period === 'today' ? 'bg-[#0B5834] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}" data-period="today">Hari Ini</button>
+            <button type="button" class="btn-period px-3 py-1.5 rounded-lg transition ${period === '7days' ? 'bg-[#0B5834] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}" data-period="7days">7 Hari</button>
+            <button type="button" class="btn-period px-3 py-1.5 rounded-lg transition ${period === '30days' ? 'bg-[#0B5834] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}" data-period="30days">30 Hari</button>
+            <button type="button" class="btn-period px-3 py-1.5 rounded-lg transition ${period === 'all' ? 'bg-[#0B5834] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}" data-period="all">Semua Waktu</button>
+          </div>
+        </div>
+
+        <!-- 4 KPI CARDS UTAMA (LABA RUGI & VOLUME PENJUALAN) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Omzet Penjualan Hari Ini</span>
-            <div class="text-xl sm:text-2xl font-black text-emerald-800 mt-1">${this.formatRp(metrics.todayRevenue)}</div>
-            <p class="text-[11px] text-emerald-600 font-semibold mt-1">✓ Berdasarkan ${metrics.todayTxCount} Transaksi</p>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Omzet Penjualan</span>
+            <div class="text-xl sm:text-2xl font-black text-[#0B5834] mt-1">${this.formatRp(metrics.todayRevenue)}</div>
+            <p class="text-[11px] text-emerald-700 font-semibold mt-1">✓ ${metrics.todayTxCount} Nota Transaksi (${metrics.todayCups} Cup)</p>
           </div>
+
           <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Cup Terjual Hari Ini</span>
-            <div class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${metrics.todayCups} Cup</div>
-            <p class="text-[11px] text-slate-500 font-medium mt-1">Porsi Minuman Teh Poci</p>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Modal Bahan (HPP)</span>
+            <div class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${this.formatRp(metrics.totalCogs)}</div>
+            <p class="text-[11px] text-slate-500 font-medium mt-1">Teh, Gula, Cup, Lid & Sirup</p>
           </div>
+
           <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Rata-rata Nilai Keranjang</span>
-            <div class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${this.formatRp(metrics.avgBasket)}</div>
-            <p class="text-[11px] text-slate-500 font-medium mt-1">Per Nota Pembelian</p>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Laba Kotor (Gross Profit)</span>
+            <div class="text-xl sm:text-2xl font-black text-emerald-600 mt-1">${this.formatRp(metrics.grossProfit)}</div>
+            <p class="text-[11px] text-emerald-800 font-black mt-1">Margin Kotor: ${metrics.grossMarginPercent}%</p>
           </div>
+
           <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Transaksi Tersimpan</span>
-            <div class="text-xl sm:text-2xl font-black text-slate-800 mt-1">${metrics.allTimeTxCount} Trx</div>
-            <p class="text-[11px] text-slate-500 font-medium mt-1">Di Database Kasir</p>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Estimasi Laba Bersih</span>
+            <div class="text-xl sm:text-2xl font-black ${metrics.netProfit >= 0 ? 'text-[#0B5834]' : 'text-red-600'} mt-1">${this.formatRp(metrics.netProfit)}</div>
+            <p class="text-[11px] text-slate-500 font-medium mt-1">Est. Beban Op: ${this.formatRp(metrics.operationalCost)}</p>
           </div>
         </div>
 
-        <!-- BREAKDOWN METODE PEMBAYARAN & PRODUK TERLARIS -->
+        <!-- LAPORAN LABA RUGI STATEMENT RINGKAS -->
+        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs">
+          <h3 class="font-black text-slate-900 text-sm mb-3 flex items-center justify-between">
+            <span>Rincian Laporan Laba Rugi (P&L Summary)</span>
+            <span class="text-xs font-mono font-bold text-[#0B5834]">Periode: ${period === 'today' ? 'Hari Ini' : (period === '7days' ? '7 Hari Terakhir' : (period === '30days' ? '30 Hari Terakhir' : 'Semua Data'))}</span>
+          </h3>
+
+          <div class="divide-y divide-slate-100 text-xs font-medium">
+            <div class="py-2.5 flex justify-between">
+              <span class="text-slate-600">Total Penjualan Minuman (Gross Sales)</span>
+              <span class="font-bold text-slate-900">${this.formatRp(metrics.todayRevenue)}</span>
+            </div>
+            <div class="py-2.5 flex justify-between text-red-700">
+              <span>Dikurangi: Biaya Modal Bahan Baku Minuman (HPP / COGS)</span>
+              <span class="font-bold">-${this.formatRp(metrics.totalCogs)}</span>
+            </div>
+            <div class="py-2.5 flex justify-between font-bold text-emerald-900 bg-emerald-50/50 px-2 rounded-lg">
+              <span>= LABA KOTOR (GROSS PROFIT)</span>
+              <span class="font-black text-sm">${this.formatRp(metrics.grossProfit)} (${metrics.grossMarginPercent}%)</span>
+            </div>
+            <div class="py-2.5 flex justify-between text-slate-500">
+              <span>Dikurangi: Estimasi Beban Operasional Booth (Es Batu, Listrik, Sewa)</span>
+              <span class="font-bold">-${this.formatRp(metrics.operationalCost)}</span>
+            </div>
+            <div class="py-3 flex justify-between font-black text-sm ${metrics.netProfit >= 0 ? 'text-[#0B5834] bg-emerald-100/60' : 'text-red-700 bg-red-50'} px-2 rounded-lg">
+              <span>= ESTIMASI LABA BERSIH (NET PROFIT)</span>
+              <span>${this.formatRp(metrics.netProfit)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRID 2 KOLOM: PRODUK TERLARIS VS PRODUK KURANG LAKU -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          <!-- Box Metode Pembayaran -->
-          <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs">
-            <h3 class="font-black text-slate-900 text-sm mb-4">Komposisi Metode Pembayaran (Hari Ini)</h3>
-            <div class="space-y-3 text-xs">
-              <div>
-                <div class="flex justify-between font-bold mb-1">
-                  <span>💵 Uang Tunai</span>
-                  <span class="text-emerald-800">${this.formatRp(metrics.paymentBreakdown.Tunai)}</span>
-                </div>
-                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                  <div class="bg-emerald-600 h-full rounded-full" style="width: ${metrics.todayRevenue > 0 ? (metrics.paymentBreakdown.Tunai / metrics.todayRevenue * 100) : 0}%"></div>
-                </div>
+          <!-- Kolom 1: 🏆 Produk Terlaris (Best Seller) -->
+          <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-black text-slate-900 text-sm flex items-center gap-1.5">
+                  <span>🏆</span>
+                  <span>Produk Terlaris (Fast-Moving)</span>
+                </h3>
+                <span class="text-[10px] font-bold text-[#0B5834] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Paling Diminati</span>
               </div>
+              <p class="text-xs text-slate-500 mb-4">Varian menu dengan kontribusi penjualan dan perputaran cup tertinggi.</p>
 
-              <div>
-                <div class="flex justify-between font-bold mb-1">
-                  <span>📱 QRIS Standar</span>
-                  <span class="text-sky-800">${this.formatRp(metrics.paymentBreakdown.QRIS)}</span>
-                </div>
-                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                  <div class="bg-sky-600 h-full rounded-full" style="width: ${metrics.todayRevenue > 0 ? (metrics.paymentBreakdown.QRIS / metrics.todayRevenue * 100) : 0}%"></div>
-                </div>
-              </div>
-
-              <div>
-                <div class="flex justify-between font-bold mb-1">
-                  <span>🏦 Transfer Bank</span>
-                  <span class="text-purple-800">${this.formatRp(metrics.paymentBreakdown.Transfer)}</span>
-                </div>
-                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                  <div class="bg-purple-600 h-full rounded-full" style="width: ${metrics.todayRevenue > 0 ? (metrics.paymentBreakdown.Transfer / metrics.todayRevenue * 100) : 0}%"></div>
-                </div>
+              <div class="space-y-2.5 text-xs">
+                ${metrics.topProducts.length === 0 ? `
+                  <p class="text-slate-400 py-8 text-center">Belum ada data penjualan pada periode ini.</p>
+                ` : metrics.topProducts.map((p, idx) => `
+                  <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between hover:bg-emerald-50/40 transition">
+                    <div class="flex items-center gap-3">
+                      <span class="w-7 h-7 rounded-xl ${idx === 0 ? 'bg-[#FEDE00] text-[#0B5834] font-black' : 'bg-slate-200 text-slate-700 font-bold'} text-xs flex items-center justify-center shrink-0">
+                        ${idx + 1}
+                      </span>
+                      <div>
+                        <span class="font-bold text-slate-900 block leading-tight">${p.name}</span>
+                        <span class="text-[10px] text-slate-400">${p.category} • Harga: ${this.formatRp(p.price)}</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-black text-[#0B5834] text-xs block">${p.qty_sold} Cup</span>
+                      <span class="text-[10px] font-bold text-emerald-700 font-mono">${this.formatRp(p.revenue)} (Margin ${p.margin_percent}%)</span>
+                    </div>
+                  </div>
+                `).join('')}
               </div>
             </div>
           </div>
 
-          <!-- Top 5 Produk Terlaris -->
-          <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs">
-            <h3 class="font-black text-slate-900 text-sm mb-4">5 Varian Teh Poci Terlaris (Hari Ini)</h3>
-            <div class="space-y-2 text-xs">
-              ${metrics.topProducts.length === 0 ? `
-                <p class="text-slate-400 py-6 text-center">Belum ada transaksi minuman hari ini.</p>
-              ` : metrics.topProducts.map((p, idx) => `
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                  <div class="flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 font-black text-xs flex items-center justify-center">${idx + 1}</span>
-                    <span class="font-bold text-slate-800">${p.name}</span>
+          <!-- Kolom 2: ⚠️ Produk Kurang Laku (Slow Moving) -->
+          <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-black text-slate-900 text-sm flex items-center gap-1.5">
+                  <span>⚠️</span>
+                  <span>Produk Kurang Laku (Slow-Moving)</span>
+                </h3>
+                <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Perlu Evaluasi</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-4">Menu dengan penjualan paling rendah. Perlu dipromosikan agar stok bahan baku tidak tertahan lama.</p>
+
+              <div class="space-y-2.5 text-xs">
+                ${metrics.slowProducts.length === 0 ? `
+                  <p class="text-slate-400 py-8 text-center">Semua produk terjual merata.</p>
+                ` : metrics.slowProducts.map((p) => `
+                  <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between hover:bg-amber-50/40 transition">
+                    <div>
+                      <span class="font-bold text-slate-800 block leading-tight">${p.name}</span>
+                      <span class="text-[10px] text-slate-400">${p.category} • Harga: ${this.formatRp(p.price)}</span>
+                    </div>
+                    <div class="text-right">
+                      <span class="font-black ${p.qty_sold === 0 ? 'text-red-600 bg-red-50 border border-red-200' : 'text-amber-800 bg-amber-50 border border-amber-200'} px-2 py-0.5 rounded-lg text-[11px] block">
+                        ${p.qty_sold === 0 ? '0 Cup (Belum Terjual)' : `${p.qty_sold} Cup`}
+                      </span>
+                      <span class="text-[10px] text-slate-400 mt-0.5 block">HPP: ${this.formatRp(p.cost_price)}</span>
+                    </div>
                   </div>
-                  <span class="font-black text-emerald-900 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-100">${p.qty} Cup</span>
-                </div>
-              `).join('')}
+                `).join('')}
+              </div>
             </div>
           </div>
 
         </div>
+
+        <!-- BAGIAN REKOMENDASI & SARAN STRATEGIS BISNIS UNTUK OWNER (PAK FAIK) -->
+        <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="font-black text-slate-900 text-base flex items-center gap-2">
+                <span>💡 Saran & Rekomendasi Keputusan Bisnis untuk Owner</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#FEDE00] text-[#0B5834]">STRATEGIS</span>
+              </h3>
+              <p class="text-xs text-slate-500">Rangkuman poin penting dari data penjualan dan stok untuk memudahkan pengambilan keputusan usaha.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${metrics.strategicAdvice.map(adv => `
+              <div class="p-4 rounded-2xl border ${adv.color === 'emerald' ? 'bg-emerald-50/40 border-emerald-200' : (adv.color === 'amber' ? 'bg-amber-50/40 border-amber-200' : (adv.color === 'red' ? 'bg-red-50/40 border-red-200' : (adv.color === 'sky' ? 'bg-sky-50/40 border-sky-200' : 'bg-purple-50/40 border-purple-200')))} space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-lg">${adv.icon}</span>
+                  <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${adv.color === 'emerald' ? 'bg-emerald-100 text-emerald-800' : (adv.color === 'amber' ? 'bg-amber-100 text-amber-800' : (adv.color === 'red' ? 'bg-red-100 text-red-800' : (adv.color === 'sky' ? 'bg-sky-100 text-sky-800' : 'bg-purple-100 text-purple-800')))}">
+                    ${adv.badge}
+                  </span>
+                </div>
+                <h4 class="font-black text-slate-900 text-xs">${adv.title}</h4>
+                <p class="text-xs text-slate-600 leading-relaxed">${adv.description}</p>
+                <div class="pt-2 border-t border-slate-200/60 text-xs text-slate-800 bg-white/70 p-2.5 rounded-xl font-medium">
+                  👉 ${adv.action}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
       </div>
     `;
   }
 
-  // TAB 2: BRAND & CABANG SETTINGS
+  // TAB 2: UPDATE STOK BAHAN BAKU (INVENTORY MANAGEMENT)
+  renderInventoryTab() {
+    if (!this.inventory) {
+      return `<p class="p-8 text-center text-slate-400">Modul stok bahan baku sedang dimuat...</p>`;
+    }
+
+    const summary = this.inventory.getSummary();
+    let items = this.inventory.getAll();
+
+    // Filter Kategori
+    if (this.inventoryFilterCategory && this.inventoryFilterCategory !== 'Semua') {
+      items = items.filter(i => i.category === this.inventoryFilterCategory);
+    }
+
+    // Filter Search
+    if (this.inventorySearch) {
+      const q = this.inventorySearch.toLowerCase().trim();
+      items = items.filter(i => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
+    }
+
+    return `
+      <div class="space-y-6">
+        
+        <!-- HEADER & RINGKASAN STOK -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[10px] font-bold text-slate-400 uppercase block">Total Bahan & Kemasan</span>
+            <span class="text-lg sm:text-xl font-black text-slate-800 mt-1 block">${summary.total} Varian</span>
+            <p class="text-[10px] text-slate-500 font-medium mt-0.5">Katalog Bahan Booth</p>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[10px] font-bold text-emerald-600 uppercase block">🟢 Stok Aman</span>
+            <span class="text-lg sm:text-xl font-black text-emerald-800 mt-1 block">${summary.safe} Bahan</span>
+            <p class="text-[10px] text-emerald-600 font-medium mt-0.5">Di Atas Batas Minimal</p>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[10px] font-bold text-amber-600 uppercase block">🟡 Stok Menipis</span>
+            <span class="text-lg sm:text-xl font-black text-amber-800 mt-1 block">${summary.warning} Bahan</span>
+            <p class="text-[10px] text-amber-600 font-medium mt-0.5">Mendekati Batas Minimal</p>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[10px] font-bold text-red-600 uppercase block">🔴 Stok Kritis (Habis)</span>
+            <span class="text-lg sm:text-xl font-black text-red-800 mt-1 block">${summary.critical} Bahan</span>
+            <p class="text-[10px] text-red-600 font-medium mt-0.5">Perlu Order Ulang Segera</p>
+          </div>
+        </div>
+
+        <!-- ACTION BAR & SEARCH -->
+        <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="font-black text-slate-900 text-base">Manajemen Stok Bahan Baku & Kemasan</h3>
+              <p class="text-xs text-slate-500">Perbarui jumlah stok fisik di booth, atur batas minimal peringatan, dan catat restock.</p>
+            </div>
+            <button type="button" id="btn-add-new-inv" class="py-2.5 px-4 rounded-xl bg-[#0B5834] hover:bg-[#074025] text-white font-bold text-xs shadow-sm flex items-center gap-1.5 active:scale-95 transition">
+              <span>+ Tambah Bahan Baru</span>
+            </button>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div class="relative w-full sm:w-80">
+              <input type="text" id="inv-search-input" value="${this.inventorySearch}" placeholder="Cari nama bahan baku atau kemasan..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 outline-none focus:border-emerald-600">
+              <span class="absolute left-3 top-2 text-slate-400 text-xs">🔍</span>
+            </div>
+
+            <div class="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto text-xs font-bold no-scrollbar">
+              ${['Semua', 'Bahan Utama', 'Kemasan', 'Sirup Buah', 'Powder Rasa'].map(cat => `
+                <button type="button" class="btn-inv-cat py-1.5 px-3 rounded-lg border transition whitespace-nowrap ${this.inventoryFilterCategory === cat ? 'bg-[#0B5834] text-white border-[#0B5834]' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}" data-cat="${cat}">
+                  ${cat}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- TABEL DAFTAR STOK -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Nama Bahan Baku / Kemasan</th>
+                  <th class="p-3">Kategori</th>
+                  <th class="p-3">Sisa Stok Fisik</th>
+                  <th class="p-3">Batas Minimal</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3 text-center">Penyesuaian Cepat</th>
+                  <th class="p-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${items.length === 0 ? `
+                  <tr>
+                    <td colspan="7" class="p-8 text-center text-slate-400">Tidak ada bahan baku yang cocok dengan pencarian.</td>
+                  </tr>
+                ` : items.map(item => {
+                  const status = this.inventory.getItemStatus(item);
+                  return `
+                    <tr class="hover:bg-slate-50 transition">
+                      <td class="p-3">
+                        <span class="font-bold text-slate-900 block leading-tight">${item.name}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">ID: ${item.id} • Satuan: ${item.unit}</span>
+                      </td>
+                      <td class="p-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">${item.category}</span>
+                      </td>
+                      <td class="p-3">
+                        <span class="font-black text-sm ${status === 'critical' ? 'text-red-700' : (status === 'warning' ? 'text-amber-700' : 'text-[#0B5834]')}">${item.stock}</span>
+                        <span class="text-[11px] text-slate-500 font-medium"> ${item.unit}</span>
+                      </td>
+                      <td class="p-3 text-slate-600 font-medium">
+                        ${item.min_stock} ${item.unit}
+                      </td>
+                      <td class="p-3">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${status === 'critical' ? 'bg-red-100 text-red-800 border border-red-200' : (status === 'warning' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200')}">
+                          ${status === 'critical' ? '🔴 Kritis (Order!)' : (status === 'warning' ? '🟡 Menipis' : '🟢 Aman')}
+                        </span>
+                      </td>
+                      <td class="p-3 text-center">
+                        <div class="inline-flex items-center gap-1">
+                          <button type="button" class="btn-stock-adj px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs" data-id="${item.id}" data-delta="-1" title="Kurangi 1">-1</button>
+                          <button type="button" class="btn-stock-adj px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-[#0B5834] font-black text-xs" data-id="${item.id}" data-delta="1" title="Tambah 1">+1</button>
+                          <button type="button" class="btn-stock-adj px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 text-[#0B5834] font-black text-xs" data-id="${item.id}" data-delta="5" title="Tambah 5 (Restock)">+5</button>
+                        </div>
+                      </td>
+                      <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                          <button type="button" class="btn-edit-inv px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 text-[11px]" data-id="${item.id}">
+                            ✏️ Edit
+                          </button>
+                          <button type="button" class="btn-del-inv px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 font-bold text-red-700 text-[11px]" data-id="${item.id}" title="Hapus">
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+
+  // TAB 3: BRAND & CABANG SETTINGS
   renderBrandTab() {
     return `
       <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs max-w-3xl space-y-4">
         <div>
-          <h3 class="font-black text-slate-900 text-base">Identitas Brand & Booth Outlet</h3>
-          <p class="text-xs text-slate-500">Konfigurasi informasi cabang yang tampil pada layar POS, struk kasir, dan laporan.</p>
+          <h3 class="font-black text-slate-900 text-base">Identitas Brand & Rekening Pembayaran</h3>
+          <p class="text-xs text-slate-500">Konfigurasi informasi cabang dan nomor rekening transfer resmi yang tampil pada POS dan struk.</p>
         </div>
 
         <form id="form-brand-settings" class="space-y-4 text-xs">
@@ -343,8 +653,8 @@ export class CmsView {
           </div>
 
           <div class="pt-3 border-t border-slate-100 flex justify-end">
-            <button type="submit" class="py-3 px-6 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs uppercase tracking-wider shadow-md active:scale-95 transition">
-              Simpan Identitas Brand
+            <button type="submit" class="py-3 px-6 rounded-xl bg-[#0B5834] hover:bg-[#074025] text-white font-black text-xs uppercase tracking-wider shadow-md active:scale-95 transition">
+              Simpan Identitas Brand & Rekening
             </button>
           </div>
         </form>
@@ -352,7 +662,7 @@ export class CmsView {
     `;
   }
 
-  // TAB 3: APPEARANCE & THEME CUSTOMIZER
+  // TAB 4: APPEARANCE & THEME CUSTOMIZER
   renderAppearanceTab() {
     return `
       <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs max-w-3xl space-y-6">
@@ -432,7 +742,7 @@ export class CmsView {
           </div>
 
           <div class="pt-3 border-t border-slate-100 flex justify-end">
-            <button type="submit" class="py-3 px-6 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs uppercase tracking-wider shadow-md active:scale-95 transition">
+            <button type="submit" class="py-3 px-6 rounded-xl bg-[#0B5834] hover:bg-[#074025] text-white font-black text-xs uppercase tracking-wider shadow-md active:scale-95 transition">
               Terapkan Perubahan Tampilan
             </button>
           </div>
@@ -441,7 +751,7 @@ export class CmsView {
     `;
   }
 
-  // TAB 4: KATALOG MENU & HARGA (CRUD)
+  // TAB 5: KATALOG MENU & HARGA (CRUD)
   renderMenuTab() {
     const list = this.products.getAllProducts();
 
@@ -450,9 +760,9 @@ export class CmsView {
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div>
             <h3 class="font-black text-slate-900 text-base">Manajemen Katalog Menu Minuman (17 Varian)</h3>
-            <p class="text-xs text-slate-500">Kelola harga jual, harga modal, status ketersediaan stok, dan varian baru.</p>
+            <p class="text-xs text-slate-500">Kelola harga jual, harga modal/HPP, status ketersediaan stok, dan varian baru.</p>
           </div>
-          <button type="button" id="btn-add-new-product" class="py-2 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm flex items-center gap-1.5">
+          <button type="button" id="btn-add-new-product" class="py-2 px-4 rounded-xl bg-[#0B5834] hover:bg-[#074025] text-white font-bold text-xs shadow-sm flex items-center gap-1.5 active:scale-95 transition">
             <span>+ Tambah Menu Baru</span>
           </button>
         </div>
@@ -465,7 +775,7 @@ export class CmsView {
                 <th class="p-3">Kode / Nama Minuman</th>
                 <th class="p-3">Kategori</th>
                 <th class="p-3">Harga Jual</th>
-                <th class="p-3">Harga Modal</th>
+                <th class="p-3">Harga Modal (HPP)</th>
                 <th class="p-3">Status</th>
                 <th class="p-3 text-center">Aksi</th>
               </tr>
@@ -494,8 +804,12 @@ export class CmsView {
                   </td>
                   <td class="p-3 text-center">
                     <div class="flex items-center justify-center gap-1.5">
-                      <button type="button" class="btn-edit-prod p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700" data-id="${p.id}" title="Edit Produk">✏️</button>
-                      <button type="button" class="btn-del-prod p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700" data-id="${p.id}" title="Hapus Produk">🗑️</button>
+                      <button type="button" class="btn-edit-prod p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-slate-700" data-id="${p.id}" title="Edit Menu">
+                        ✏️
+                      </button>
+                      <button type="button" class="btn-del-prod p-1.5 rounded-lg bg-red-50 hover:bg-red-100 font-bold text-red-700" data-id="${p.id}" title="Hapus Menu">
+                        🗑️
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -507,69 +821,52 @@ export class CmsView {
     `;
   }
 
-  // TAB 5: GOOGLE APPS SCRIPT & LISENSI
+  // TAB 6: INTEGRASI SPREADSHEET & LISENSI
   renderSheetsTab() {
-    const isGasConfigured = this.api.isGasConfigured();
-    const gasUrl = this.settings.get('gas_api_url');
-    const clientName = this.settings.get('license_client_name', 'Pak Faik - Mitra Teh Poci');
-    const licenseStatus = this.settings.get('license_status', 'ACTIVE');
+    const isGasActive = this.api.isGasConfigured();
 
     return `
-      <div class="space-y-6 max-w-3xl">
-        
-        <!-- Box Konfigurasi Google Apps Script -->
-        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs max-w-3xl space-y-6">
+        <div>
+          <h3 class="font-black text-slate-900 text-base">Integrasi Google Apps Script & Lisensi Multi-Tenant</h3>
+          <p class="text-xs text-slate-500">Konfigurasi endpoint database Google Spreadsheet agar semua transaksi, stok, dan menu tersinkronisasi otomatis.</p>
+        </div>
+
+        <form id="form-gas-config" class="space-y-4 text-xs">
           <div>
-            <h3 class="font-black text-slate-900 text-base">Integrasi Google Apps Script (Spreadsheet API)</h3>
-            <p class="text-xs text-slate-500">Hubungkan web app POS ini dengan Google Spreadsheet Anda sebagai backend database real-time.</p>
+            <label class="block font-bold text-slate-700 mb-1">URL Google Apps Script Web App</label>
+            <input type="url" id="input-gas-url" required value="${this.settings.get('gas_api_url')}" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="w-full p-3 rounded-xl border border-slate-200 font-mono text-xs outline-none focus:border-emerald-600">
+            <span class="text-[11px] text-slate-400 mt-1 block">Pastikan Deployment Web App di Apps Script disetel ke: <em>Execute as: Me</em> dan <em>Who has access: Anyone</em>.</span>
           </div>
 
-          <form id="form-gas-config" class="space-y-3 text-xs">
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">URL Web App Google Apps Script</label>
-              <input type="url" id="input-gas-url" value="${gasUrl}" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-mono outline-none focus:border-emerald-600">
-              <p class="text-[11px] text-slate-400 mt-1">Dapatkan URL ini dari menu <strong>Deploy > New Deployment > Web App (Access: Anyone)</strong> pada Google Sheets Anda.</p>
-            </div>
-
-            <div class="flex flex-wrap gap-2 pt-2">
-              <button type="button" id="btn-test-gas" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 flex items-center gap-1.5">
-                <span>⚡ Test Koneksi (Ping)</span>
-              </button>
-              <button type="button" id="btn-init-sheets" class="py-2.5 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold border border-emerald-200 flex items-center gap-1.5">
-                <span>🪄 Inisialisasi 5 Sheet Otomatis</span>
-              </button>
-              <button type="button" id="btn-sync-data" class="py-2.5 px-4 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold border border-sky-200 flex items-center gap-1.5">
-                <span>🔄 Sinkronkan Data dari Sheets</span>
-              </button>
-              <button type="submit" class="py-2.5 px-5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold ml-auto">
-                Simpan URL
-              </button>
-            </div>
-
-            <div id="gas-test-result" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
-          </form>
-        </div>
-
-        <!-- Box Lisensi & Profil Multi-Tenant Booth -->
-        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-3 text-xs">
-          <div class="flex items-center justify-between">
-            <h3 class="font-black text-slate-900 text-sm">Profil Lisensi Mitra & Multi-Tenant</h3>
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">${licenseStatus}</span>
+          <div class="flex gap-2">
+            <button type="button" id="btn-test-gas" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold">
+              Uji Koneksi (Ping)
+            </button>
+            <button type="button" id="btn-init-sheets" class="py-2.5 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#0B5834] font-bold border border-emerald-200">
+              Buat / Reset Tab Sheet Otomatis
+            </button>
+            <button type="submit" class="py-2.5 px-5 rounded-xl bg-[#0B5834] hover:bg-[#074025] text-white font-bold ml-auto shadow-sm">
+              Simpan URL
+            </button>
           </div>
-          <p class="text-slate-500">Aplikasi ini siap di-clone untuk outlet mitra booth Teh Poci lain cukup dengan mengganti Spreadsheet ID.</p>
-          
-          <div class="grid grid-cols-2 gap-3 pt-2">
+
+          <div id="gas-test-result" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+        </form>
+
+        <div class="pt-6 border-t border-slate-100 space-y-3 text-xs">
+          <h4 class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Profil Lisensi & White-Label:</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono">
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span class="text-[10px] text-slate-400 font-bold block">Pemegang Lisensi:</span>
-              <span class="font-bold text-slate-800 text-xs">${clientName}</span>
+              <span class="text-[10px] text-slate-400 block font-sans font-bold">Klien / Pemilik:</span>
+              <span class="font-bold text-slate-900">${this.settings.get('client_name', 'Pak Faik - Mitra Teh Poci')}</span>
             </div>
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span class="text-[10px] text-slate-400 font-bold block">Kode Lisensi:</span>
-              <span class="font-bold text-slate-800 text-xs font-mono">POCI-LPR-PRO-2026</span>
+              <span class="text-[10px] text-slate-400 block font-sans font-bold">Status Lisensi:</span>
+              <span class="font-bold text-emerald-700">✓ AKTIF (LIFETIME BOOTH)</span>
             </div>
           </div>
         </div>
-
       </div>
     `;
   }
@@ -578,9 +875,10 @@ export class CmsView {
     const root = container.querySelector('#cms-root');
     if (!root) return;
 
+    // Kembali ke POS
     root.querySelector('#btn-back-to-pos')?.addEventListener('click', () => this.navigate('pos'));
 
-    // Tab Switch
+    // Ganti Tab Utama
     root.querySelectorAll('.cms-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.activeTab = btn.getAttribute('data-tab');
@@ -588,7 +886,152 @@ export class CmsView {
       });
     });
 
-    // Brand Settings Form
+    // Tombol Sinkronkan Data Sheets di Header
+    root.querySelector('#btn-sync-all-gas')?.addEventListener('click', async () => {
+      const spin = root.querySelector('#cms-sync-spin');
+      if (spin) spin.classList.add('animate-spin');
+      try {
+        await this.cms.syncAllFromGas();
+        alert('Data berhasil disinkronkan dengan Google Spreadsheet!');
+        this.render(container);
+      } catch (err) {
+        alert('Gagal sinkronisasi: ' + err.message);
+      } finally {
+        if (spin) spin.classList.remove('animate-spin');
+      }
+    });
+
+    // Event Filter Periode Waktu di Tab Dashboard
+    root.querySelectorAll('.btn-period').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const period = btn.getAttribute('data-period');
+        this.cms.setPeriod(period);
+        this.render(container);
+      });
+    });
+
+    // Event Tab Inventory
+    this.bindInventoryEvents(root, container);
+
+    // Event Tab Brand
+    this.bindBrandEvents(root, container);
+
+    // Event Tab Appearance
+    this.bindAppearanceEvents(root, container);
+
+    // Event Tab Menu (Katalog)
+    this.bindMenuTabEvents(root, container);
+
+    // Event Tab Sheets
+    this.bindSheetsTabEvents(root, container);
+  }
+
+  // EVENTS UNTUK TAB INVENTORY (STOK BAHAN BAKU)
+  bindInventoryEvents(root, container) {
+    if (!this.inventory) return;
+
+    const modal = root.querySelector('#modal-edit-inventory');
+    const form = root.querySelector('#form-inv-edit');
+
+    // Filter Kategori Bahan
+    root.querySelectorAll('.btn-inv-cat').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.inventoryFilterCategory = btn.getAttribute('data-cat');
+        this.render(container);
+      });
+    });
+
+    // Search Bahan
+    const searchInput = root.querySelector('#inv-search-input');
+    searchInput?.addEventListener('input', (e) => {
+      this.inventorySearch = e.target.value;
+      // Re-render hanya bagian tabel untuk mempertahankan fokus jika perlu
+      this.render(container);
+    });
+
+    // Tombol Tambah Bahan Baru
+    root.querySelector('#btn-add-new-inv')?.addEventListener('click', () => {
+      this.editingInventory = null;
+      root.querySelector('#modal-inv-title').textContent = 'Tambah Bahan Baku / Kemasan Baru';
+      root.querySelector('#inv-edit-id').value = '';
+      root.querySelector('#inv-edit-name').value = '';
+      root.querySelector('#inv-edit-category').value = 'Bahan Utama';
+      root.querySelector('#inv-edit-unit').value = 'Kg';
+      root.querySelector('#inv-edit-stock').value = '10';
+      root.querySelector('#inv-edit-min').value = '5';
+      modal?.classList.remove('hidden');
+    });
+
+    // Tombol Edit Bahan
+    root.querySelectorAll('.btn-edit-inv').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const item = this.inventory.getById(id);
+        if (item) {
+          this.editingInventory = item;
+          root.querySelector('#modal-inv-title').textContent = 'Edit Stok: ' + item.name;
+          root.querySelector('#inv-edit-id').value = item.id;
+          root.querySelector('#inv-edit-name').value = item.name;
+          root.querySelector('#inv-edit-category').value = item.category;
+          root.querySelector('#inv-edit-unit').value = item.unit;
+          root.querySelector('#inv-edit-stock').value = item.stock;
+          root.querySelector('#inv-edit-min').value = item.min_stock;
+          modal?.classList.remove('hidden');
+        }
+      });
+    });
+
+    // Penyesuaian Stok Cepat (+1, -1, +5)
+    root.querySelectorAll('.btn-stock-adj').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const delta = Number(btn.getAttribute('data-delta'));
+        this.inventory.adjustStock(id, delta);
+        this.render(container);
+      });
+    });
+
+    // Hapus Bahan Baku
+    root.querySelectorAll('.btn-del-inv').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        if (confirm('Yakin ingin menghapus item bahan baku ini dari daftar?')) {
+          this.inventory.deleteItem(id);
+          this.render(container);
+        }
+      });
+    });
+
+    // Batal Modal
+    root.querySelector('#btn-cancel-inv-modal')?.addEventListener('click', () => {
+      modal?.classList.add('hidden');
+    });
+
+    // Submit Modal Form
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = root.querySelector('#inv-edit-id').value;
+      const itemData = {
+        name: root.querySelector('#inv-edit-name').value,
+        category: root.querySelector('#inv-edit-category').value,
+        unit: root.querySelector('#inv-edit-unit').value,
+        stock: Number(root.querySelector('#inv-edit-stock').value),
+        min_stock: Number(root.querySelector('#inv-edit-min').value)
+      };
+
+      if (id) {
+        this.inventory.updateItem(id, itemData);
+      } else {
+        this.inventory.addItem(itemData);
+      }
+
+      modal?.classList.add('hidden');
+      alert('Stok bahan baku berhasil diperbarui!');
+      this.render(container);
+    });
+  }
+
+  bindBrandEvents(root, container) {
     const formBrand = root.querySelector('#form-brand-settings');
     if (formBrand) {
       formBrand.addEventListener('submit', async (e) => {
@@ -611,15 +1054,15 @@ export class CmsView {
           bank_mandiri_name: root.querySelector('#set-mandiri-name')?.value || 'FAIK'
         };
         await this.cms.updateSettings(newSettings);
-        alert('Identitas Brand & Cabang berhasil diperbarui!');
+        alert('Identitas Brand & Rekening berhasil disimpan!');
         this.render(container);
       });
     }
+  }
 
-    // Appearance Settings Form
+  bindAppearanceEvents(root, container) {
     const formAppearance = root.querySelector('#form-appearance-settings');
     if (formAppearance) {
-      // Color pickers sync
       ['primary', 'accent', 'red', 'yellow'].forEach(c => {
         const picker = root.querySelector(`#theme-${c}`);
         const hex = root.querySelector(`#theme-${c}-hex`);
@@ -645,19 +1088,12 @@ export class CmsView {
         this.render(container);
       });
     }
-
-    // Menu Tab Events
-    this.bindMenuTabEvents(root, container);
-
-    // Sheets Tab Events
-    this.bindSheetsTabEvents(root, container);
   }
 
   bindMenuTabEvents(root, container) {
     const modal = root.querySelector('#modal-edit-product');
     const formEdit = root.querySelector('#form-product-edit');
 
-    // Tambah Menu Baru
     root.querySelector('#btn-add-new-product')?.addEventListener('click', () => {
       this.editingProduct = null;
       root.querySelector('#modal-product-title').textContent = 'Tambah Menu Minuman Baru';
@@ -671,7 +1107,6 @@ export class CmsView {
       modal?.classList.remove('hidden');
     });
 
-    // Edit Menu
     root.querySelectorAll('.btn-edit-prod').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
@@ -692,7 +1127,6 @@ export class CmsView {
       });
     });
 
-    // Toggle Active
     root.querySelectorAll('.btn-toggle-active').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-id');
@@ -701,7 +1135,6 @@ export class CmsView {
       });
     });
 
-    // Delete Product
     root.querySelectorAll('.btn-del-prod').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-id');
@@ -712,12 +1145,10 @@ export class CmsView {
       });
     });
 
-    // Close Modal
     root.querySelector('#btn-cancel-product-modal')?.addEventListener('click', () => {
       modal?.classList.add('hidden');
     });
 
-    // Submit Product Form
     formEdit?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const productPayload = {
@@ -750,7 +1181,6 @@ export class CmsView {
       this.render(container);
     });
 
-    // Test Ping
     root.querySelector('#btn-test-gas')?.addEventListener('click', async () => {
       const url = root.querySelector('#input-gas-url').value;
       resultBox.className = 'block p-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold';
@@ -758,42 +1188,28 @@ export class CmsView {
 
       try {
         const res = await this.api.testConnection(url);
-        resultBox.className = 'block p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold';
-        resultBox.textContent = `✓ Koneksi Berhasil! Terhubung ke Sheet: "${res.data?.spreadsheetName || 'Google Spreadsheet'}"`;
+        resultBox.className = 'block p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold';
+        resultBox.textContent = '✓ Koneksi Berhasil! Respon: ' + (res.message || 'Online');
       } catch (err) {
-        resultBox.className = 'block p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold';
-        resultBox.textContent = '✕ Gagal terhubung ke GAS: ' + err.message;
+        resultBox.className = 'block p-3 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs font-semibold';
+        resultBox.textContent = '✕ Koneksi Gagal: ' + err.message;
       }
     });
 
-    // Init Sheets
     root.querySelector('#btn-init-sheets')?.addEventListener('click', async () => {
-      resultBox.className = 'block p-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold';
-      resultBox.textContent = 'Membuat 5 Tab Database di Google Spreadsheet...';
-
-      try {
-        const res = await this.api.initSheets();
-        resultBox.className = 'block p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold';
-        resultBox.textContent = '✓ 5 Tab Sheet (Users, Products, Transactions, Shift_Closings, App_Settings) berhasil dibuat dan di-seed data awal!';
-      } catch (err) {
-        resultBox.className = 'block p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold';
-        resultBox.textContent = '✕ Gagal inisialisasi sheet: ' + err.message;
-      }
-    });
-
-    // Sync Data
-    root.querySelector('#btn-sync-data')?.addEventListener('click', async () => {
-      resultBox.className = 'block p-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold';
-      resultBox.textContent = 'Menyinkronkan data katalog menu & pengaturan dari Sheets...';
-
-      try {
-        await this.cms.syncFromGoogleSheets();
-        resultBox.className = 'block p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold';
-        resultBox.textContent = '✓ Data berhasil disinkronkan dari Google Spreadsheet!';
-        setTimeout(() => this.render(container), 800);
-      } catch (err) {
-        resultBox.className = 'block p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold';
-        resultBox.textContent = '✕ Sinkronisasi gagal: ' + err.message;
+      if (confirm('Inisialisasi akan memastikan semua tab Sheet (Users, Products, Transactions, Shift_Closings, App_Settings) tersedia. Lanjutkan?')) {
+        resultBox.className = 'block p-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold';
+        resultBox.textContent = 'Menginisialisasi sheet Google Spreadsheet...';
+        try {
+          const res = await this.api.initSheets();
+          resultBox.className = 'block p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold';
+          resultBox.textContent = '✓ Tab Sheets berhasil diinisialisasi & data awal disiapkan.';
+          await this.cms.syncAllFromGas();
+          this.render(container);
+        } catch (err) {
+          resultBox.className = 'block p-3 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs font-semibold';
+          resultBox.textContent = '✕ Gagal Inisialisasi: ' + err.message;
+        }
       }
     });
   }

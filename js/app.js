@@ -10,6 +10,7 @@ import { ProductModel } from './models/ProductModel.js';
 import { TransactionModel } from './models/TransactionModel.js';
 import { ShiftModel } from './models/ShiftModel.js';
 import { SettingsModel } from './models/SettingsModel.js';
+import { InventoryModel } from './models/InventoryModel.js';
 
 // 2. Import Services
 import { ApiService } from './services/ApiService.js';
@@ -39,6 +40,7 @@ class App {
     this.productModel = new ProductModel();
     this.transactionModel = new TransactionModel();
     this.shiftModel = new ShiftModel();
+    this.inventoryModel = new InventoryModel();
 
     // Terapkan Tema CSS Variables
     this.settingsModel.applyThemeToDOM();
@@ -83,7 +85,8 @@ class App {
       this.productModel,
       this.userModel,
       this.transactionModel,
-      this.apiService
+      this.apiService,
+      this.inventoryModel
     );
 
     // Inisialisasi Views
@@ -115,7 +118,8 @@ class App {
       this.productModel,
       this.userModel,
       this.apiService,
-      (route) => this.navigate(route)
+      (route) => this.navigate(route),
+      this.inventoryModel
     );
 
     this.setupRouter();
