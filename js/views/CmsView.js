@@ -5,7 +5,7 @@
  * Saran & Rekomendasi Keputusan Bisnis Owner, Manajemen Brand/Cabang, Tema Warna, Katalog Menu, & Google Sheets.
  */
 export class CmsView {
-  constructor(cmsController, settingsModel, productModel, userModel, apiService, navigateFn, inventoryModel = null) {
+  constructor(cmsController, settingsModel, productModel, userModel, apiService, navigateFn, inventoryModel = null, soundService = null) {
     this.cms = cmsController;
     this.settings = settingsModel;
     this.products = productModel;
@@ -13,6 +13,7 @@ export class CmsView {
     this.api = apiService;
     this.navigate = navigateFn;
     this.inventory = inventoryModel;
+    this.soundService = soundService;
 
     this.activeTab = 'dashboard'; // 'dashboard' | 'inventory' | 'brand' | 'appearance' | 'menu' | 'sheets'
     this.editingProduct = null;
@@ -647,6 +648,41 @@ export class CmsView {
             </div>
           </div>
 
+          <!-- Pengaturan Soundbox Notifikasi Suara Pembayaran -->
+          <div class="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-xl">🔊</span>
+                <div>
+                  <h4 class="font-bold text-slate-800 text-xs">Soundbox Notifikasi Pembayaran (QRIS, Transfer, Tunai)</h4>
+                  <p class="text-[11px] text-slate-500">Bunyi bel kasir & suara asisten pembaca nominal otomatis saat pelanggan membayar.</p>
+                </div>
+              </div>
+              <button type="button" id="btn-cms-test-sound" class="py-1.5 px-3 rounded-xl bg-white border border-emerald-300 hover:bg-emerald-100 text-[#0B5834] font-bold text-xs shadow-xs active:scale-95 transition flex items-center gap-1.5">
+                <span>🔔</span>
+                <span>Uji Coba Suara</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-emerald-200/60">
+              <label class="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-emerald-200 cursor-pointer hover:bg-emerald-50/50 transition">
+                <input type="checkbox" id="check-sound-chime" ${this.soundService?.isSoundEnabled ? 'checked' : ''} class="w-4 h-4 text-emerald-600 rounded">
+                <div>
+                  <span class="font-bold text-slate-800 block text-xs">Bel Kasir (Chime Bell)</span>
+                  <span class="text-[10px] text-slate-500">Nada lonceng khas kasir saat pembayaran sukses</span>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-2.5 p-2.5 bg-white rounded-xl border border-emerald-200 cursor-pointer hover:bg-emerald-50/50 transition">
+                <input type="checkbox" id="check-sound-voice" ${this.soundService?.isVoiceEnabled ? 'checked' : ''} class="w-4 h-4 text-emerald-600 rounded">
+                <div>
+                  <span class="font-bold text-slate-800 block text-xs">Suara Asisten (Voice TTS)</span>
+                  <span class="text-[10px] text-slate-500">Menyebutkan nominal pembayaran (bahasa Indonesia)</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <div>
             <label class="block font-bold text-slate-700 mb-1">Pesan Kaki Struk (Receipt Footer)</label>
             <input type="text" id="set-receipt-footer" value="${this.settings.get('receipt_footer')}" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-600">
@@ -1032,6 +1068,28 @@ export class CmsView {
   }
 
   bindBrandEvents(root, container) {
+    // Soundbox Pengaturan & Uji Coba Suara
+    const btnTestSound = root.querySelector('#btn-cms-test-sound');
+    if (btnTestSound) {
+      btnTestSound.addEventListener('click', () => {
+        this.soundService?.testSound('QRIS', 16000);
+      });
+    }
+
+    const checkChime = root.querySelector('#check-sound-chime');
+    if (checkChime) {
+      checkChime.addEventListener('change', (e) => {
+        this.soundService?.toggleSound(e.target.checked);
+      });
+    }
+
+    const checkVoice = root.querySelector('#check-sound-voice');
+    if (checkVoice) {
+      checkVoice.addEventListener('change', (e) => {
+        this.soundService?.toggleVoice(e.target.checked);
+      });
+    }
+
     const formBrand = root.querySelector('#form-brand-settings');
     if (formBrand) {
       formBrand.addEventListener('submit', async (e) => {

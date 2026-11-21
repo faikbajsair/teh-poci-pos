@@ -4,7 +4,7 @@
  * Desain Mobile-First & Desktop, responsif, berkecepatan tinggi, navigasi intuitif.
  */
 export class PosView {
-  constructor(posController, productModel, transactionModel, userModel, settingsModel, apiService, navigateFn) {
+  constructor(posController, productModel, transactionModel, userModel, settingsModel, apiService, navigateFn, soundService = null) {
     this.pos = posController;
     this.products = productModel;
     this.tx = transactionModel;
@@ -12,6 +12,7 @@ export class PosView {
     this.settings = settingsModel;
     this.api = apiService;
     this.navigate = navigateFn;
+    this.soundService = soundService;
 
     this.isCartOpenMobile = false;
     this.activePaymentMethod = 'Tunai';
@@ -398,6 +399,24 @@ export class PosView {
           </button>
         </div>
 
+        <!-- Soundbox Notifikasi Suara Pembayaran -->
+        <div class="p-2.5 bg-emerald-50/90 rounded-2xl border border-emerald-200 flex items-center justify-between gap-2 shadow-2xs">
+          <div class="flex items-center gap-2">
+            <span class="text-base animate-pulse">🔊</span>
+            <div>
+              <p class="font-bold text-emerald-950 text-xs flex items-center gap-1.5">
+                <span>Soundbox Notifikasi Otomatis Aktif</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              </p>
+              <p class="text-[10px] text-emerald-700">Lonceng kasir & suara nominal berbunyi otomatis saat pembayaran dikonfirmasi.</p>
+            </div>
+          </div>
+          <button type="button" id="btn-test-sound" class="shrink-0 py-1 px-2.5 rounded-lg bg-white border border-emerald-300 hover:bg-emerald-100 text-[#0B5834] font-bold text-[11px] shadow-xs active:scale-95 transition flex items-center gap-1">
+            <span>🔔</span>
+            <span>Uji Suara</span>
+          </button>
+        </div>
+
         <!-- DETAIL METODE BAYAR -->
         ${this.activePaymentMethod === 'Tunai' ? `
           <div class="space-y-3">
@@ -702,6 +721,13 @@ export class PosView {
         return;
       }
 
+      // Uji Coba Suara Soundbox
+      if (e.target.closest('#btn-test-sound')) {
+        const total = this.tx.getTotalAmount() || 16000;
+        this.soundService?.testSound(this.activePaymentMethod, total);
+        return;
+      }
+
       // Konfirmasi Pembayaran
       if (e.target.closest('#btn-confirm-payment')) {
         this.handleConfirmPayment(root);
@@ -758,6 +784,12 @@ export class PosView {
       const result = await this.pos.processCheckout();
       root.querySelector('#modal-checkout')?.classList.add('hidden');
       this.refreshCart(root);
+
+      // Mainkan suara dering kasir + ucapan konfirmasi nominal bahasa Indonesia
+      if (this.soundService) {
+        this.soundService.notifyPaymentSuccess(result.transaction);
+      }
+
       this.openReceiptSuccessModal(root, result.transaction);
     } catch (err) {
       alert(err.message || 'Pembayaran gagal');

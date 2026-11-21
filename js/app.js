@@ -15,6 +15,7 @@ import { InventoryModel } from './models/InventoryModel.js';
 // 2. Import Services
 import { ApiService } from './services/ApiService.js';
 import { PrintService } from './services/PrintService.js';
+import { SoundService } from './services/SoundService.js';
 
 // 3. Import Controllers
 import { AuthController } from './controllers/AuthController.js';
@@ -48,6 +49,7 @@ class App {
     // Inisialisasi Services
     this.apiService = new ApiService(this.settingsModel);
     this.printService = new PrintService(this.settingsModel);
+    this.soundService = new SoundService(this.settingsModel);
 
     // Inisialisasi Controllers
     this.authController = new AuthController(
@@ -98,7 +100,8 @@ class App {
       this.userModel,
       this.settingsModel,
       this.apiService,
-      (route) => this.navigate(route)
+      (route) => this.navigate(route),
+      this.soundService
     );
     this.historyView = new HistoryView(
       this.historyController,
@@ -119,7 +122,8 @@ class App {
       this.userModel,
       this.apiService,
       (route) => this.navigate(route),
-      this.inventoryModel
+      this.inventoryModel,
+      this.soundService
     );
 
     this.setupRouter();
