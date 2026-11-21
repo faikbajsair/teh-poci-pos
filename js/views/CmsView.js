@@ -28,7 +28,7 @@ export class CmsView {
     const isGasActive = this.api.isGasConfigured();
 
     container.innerHTML = `
-      <div class="min-h-screen bg-slate-50 flex flex-col pb-12">
+      <div id="cms-root" class="min-h-screen bg-slate-50 flex flex-col pb-12">
         
         <!-- Header Admin -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
@@ -532,10 +532,13 @@ export class CmsView {
   }
 
   bindEvents(container, metrics) {
-    container.querySelector('#btn-back-to-pos')?.addEventListener('click', () => this.navigate('pos'));
+    const root = container.querySelector('#cms-root');
+    if (!root) return;
+
+    root.querySelector('#btn-back-to-pos')?.addEventListener('click', () => this.navigate('pos'));
 
     // Tab Switch
-    container.querySelectorAll('.cms-tab-btn').forEach(btn => {
+    root.querySelectorAll('.cms-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.activeTab = btn.getAttribute('data-tab');
         this.render(container);
@@ -543,19 +546,19 @@ export class CmsView {
     });
 
     // Brand Settings Form
-    const formBrand = container.querySelector('#form-brand-settings');
+    const formBrand = root.querySelector('#form-brand-settings');
     if (formBrand) {
       formBrand.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newSettings = {
-          brand_name: container.querySelector('#set-brand-name').value,
-          branch_name: container.querySelector('#set-branch-name').value,
-          branch_subtitle: container.querySelector('#set-branch-subtitle').value,
-          branch_code: container.querySelector('#set-branch-code').value,
-          address: container.querySelector('#set-address').value,
-          phone: container.querySelector('#set-phone').value,
-          operating_hours: container.querySelector('#set-hours').value,
-          receipt_footer: container.querySelector('#set-receipt-footer').value
+          brand_name: root.querySelector('#set-brand-name').value,
+          branch_name: root.querySelector('#set-branch-name').value,
+          branch_subtitle: root.querySelector('#set-branch-subtitle').value,
+          branch_code: root.querySelector('#set-branch-code').value,
+          address: root.querySelector('#set-address').value,
+          phone: root.querySelector('#set-phone').value,
+          operating_hours: root.querySelector('#set-hours').value,
+          receipt_footer: root.querySelector('#set-receipt-footer').value
         };
         await this.cms.updateSettings(newSettings);
         alert('Identitas Brand & Cabang berhasil diperbarui!');
@@ -564,12 +567,12 @@ export class CmsView {
     }
 
     // Appearance Settings Form
-    const formAppearance = container.querySelector('#form-appearance-settings');
+    const formAppearance = root.querySelector('#form-appearance-settings');
     if (formAppearance) {
       // Color pickers sync
       ['primary', 'accent', 'red', 'yellow'].forEach(c => {
-        const picker = container.querySelector(`#theme-${c}`);
-        const hex = container.querySelector(`#theme-${c}-hex`);
+        const picker = root.querySelector(`#theme-${c}`);
+        const hex = root.querySelector(`#theme-${c}-hex`);
         if (picker && hex) {
           picker.addEventListener('input', () => { hex.value = picker.value; });
           hex.addEventListener('input', () => { picker.value = hex.value; });
@@ -579,13 +582,13 @@ export class CmsView {
       formAppearance.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newAppearance = {
-          primary_color: container.querySelector('#theme-primary').value,
-          accent_color: container.querySelector('#theme-accent').value,
-          poci_red: container.querySelector('#theme-red').value,
-          bright_yellow: container.querySelector('#theme-yellow').value,
-          theme_card_style: container.querySelector('#theme-card-style').value,
-          theme_density: container.querySelector('#theme-density').value,
-          show_images_in_pos: container.querySelector('#theme-show-images').checked
+          primary_color: root.querySelector('#theme-primary').value,
+          accent_color: root.querySelector('#theme-accent').value,
+          poci_red: root.querySelector('#theme-red').value,
+          bright_yellow: root.querySelector('#theme-yellow').value,
+          theme_card_style: root.querySelector('#theme-card-style').value,
+          theme_density: root.querySelector('#theme-density').value,
+          show_images_in_pos: root.querySelector('#theme-show-images').checked
         };
         await this.cms.updateSettings(newAppearance);
         alert('Pengaturan Tema & Appearance berhasil diterapkan!');
@@ -594,53 +597,53 @@ export class CmsView {
     }
 
     // Menu Tab Events
-    this.bindMenuTabEvents(container);
+    this.bindMenuTabEvents(root, container);
 
     // Sheets Tab Events
-    this.bindSheetsTabEvents(container);
+    this.bindSheetsTabEvents(root, container);
   }
 
-  bindMenuTabEvents(container) {
-    const modal = container.querySelector('#modal-edit-product');
-    const formEdit = container.querySelector('#form-product-edit');
+  bindMenuTabEvents(root, container) {
+    const modal = root.querySelector('#modal-edit-product');
+    const formEdit = root.querySelector('#form-product-edit');
 
     // Tambah Menu Baru
-    container.querySelector('#btn-add-new-product')?.addEventListener('click', () => {
+    root.querySelector('#btn-add-new-product')?.addEventListener('click', () => {
       this.editingProduct = null;
-      container.querySelector('#modal-product-title').textContent = 'Tambah Menu Minuman Baru';
-      container.querySelector('#prod-edit-id').value = '';
-      container.querySelector('#prod-edit-name').value = '';
-      container.querySelector('#prod-edit-code').value = 'TP-' + Math.floor(10 + Math.random() * 90);
-      container.querySelector('#prod-edit-price').value = '';
-      container.querySelector('#prod-edit-cost').value = '';
-      container.querySelector('#prod-edit-image').value = 'assets/img/menu/jasmine-poci.svg';
-      container.querySelector('#prod-edit-active').checked = true;
-      modal.classList.remove('hidden');
+      root.querySelector('#modal-product-title').textContent = 'Tambah Menu Minuman Baru';
+      root.querySelector('#prod-edit-id').value = '';
+      root.querySelector('#prod-edit-name').value = '';
+      root.querySelector('#prod-edit-code').value = 'TP-' + Math.floor(10 + Math.random() * 90);
+      root.querySelector('#prod-edit-price').value = '';
+      root.querySelector('#prod-edit-cost').value = '';
+      root.querySelector('#prod-edit-image').value = 'assets/img/menu/jasmine-poci.svg';
+      root.querySelector('#prod-edit-active').checked = true;
+      modal?.classList.remove('hidden');
     });
 
     // Edit Menu
-    container.querySelectorAll('.btn-edit-prod').forEach(btn => {
+    root.querySelectorAll('.btn-edit-prod').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
         const prod = this.products.getProductById(id);
         if (prod) {
           this.editingProduct = prod;
-          container.querySelector('#modal-product-title').textContent = 'Edit Menu: ' + prod.name;
-          container.querySelector('#prod-edit-id').value = prod.id;
-          container.querySelector('#prod-edit-name').value = prod.name;
-          container.querySelector('#prod-edit-category').value = prod.category;
-          container.querySelector('#prod-edit-code').value = prod.code || '';
-          container.querySelector('#prod-edit-price').value = prod.price;
-          container.querySelector('#prod-edit-cost').value = prod.cost_price || 0;
-          container.querySelector('#prod-edit-image').value = prod.image_url || '';
-          container.querySelector('#prod-edit-active').checked = prod.is_active;
-          modal.classList.remove('hidden');
+          root.querySelector('#modal-product-title').textContent = 'Edit Menu: ' + prod.name;
+          root.querySelector('#prod-edit-id').value = prod.id;
+          root.querySelector('#prod-edit-name').value = prod.name;
+          root.querySelector('#prod-edit-category').value = prod.category;
+          root.querySelector('#prod-edit-code').value = prod.code || '';
+          root.querySelector('#prod-edit-price').value = prod.price;
+          root.querySelector('#prod-edit-cost').value = prod.cost_price || 0;
+          root.querySelector('#prod-edit-image').value = prod.image_url || '';
+          root.querySelector('#prod-edit-active').checked = prod.is_active;
+          modal?.classList.remove('hidden');
         }
       });
     });
 
     // Toggle Active
-    container.querySelectorAll('.btn-toggle-active').forEach(btn => {
+    root.querySelectorAll('.btn-toggle-active').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-id');
         await this.cms.toggleProductActive(id);
@@ -649,7 +652,7 @@ export class CmsView {
     });
 
     // Delete Product
-    container.querySelectorAll('.btn-del-prod').forEach(btn => {
+    root.querySelectorAll('.btn-del-prod').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.getAttribute('data-id');
         if (confirm('Yakin ingin menghapus menu minuman ini?')) {
@@ -660,46 +663,46 @@ export class CmsView {
     });
 
     // Close Modal
-    container.querySelector('#btn-cancel-product-modal')?.addEventListener('click', () => {
-      modal.classList.add('hidden');
+    root.querySelector('#btn-cancel-product-modal')?.addEventListener('click', () => {
+      modal?.classList.add('hidden');
     });
 
     // Submit Product Form
     formEdit?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const productPayload = {
-        id: container.querySelector('#prod-edit-id').value || null,
-        name: container.querySelector('#prod-edit-name').value,
-        category: container.querySelector('#prod-edit-category').value,
-        code: container.querySelector('#prod-edit-code').value,
-        price: Number(container.querySelector('#prod-edit-price').value),
-        cost_price: Number(container.querySelector('#prod-edit-cost').value || 0),
-        image_url: container.querySelector('#prod-edit-image').value,
-        is_active: container.querySelector('#prod-edit-active').checked
+        id: root.querySelector('#prod-edit-id').value || null,
+        name: root.querySelector('#prod-edit-name').value,
+        category: root.querySelector('#prod-edit-category').value,
+        code: root.querySelector('#prod-edit-code').value,
+        price: Number(root.querySelector('#prod-edit-price').value),
+        cost_price: Number(root.querySelector('#prod-edit-cost').value || 0),
+        image_url: root.querySelector('#prod-edit-image').value,
+        is_active: root.querySelector('#prod-edit-active').checked
       };
 
       await this.cms.upsertProduct(productPayload);
-      modal.classList.add('hidden');
+      modal?.classList.add('hidden');
       alert('Data menu berhasil disimpan!');
       this.render(container);
     });
   }
 
-  bindSheetsTabEvents(container) {
-    const formGas = container.querySelector('#form-gas-config');
-    const resultBox = container.querySelector('#gas-test-result');
+  bindSheetsTabEvents(root, container) {
+    const formGas = root.querySelector('#form-gas-config');
+    const resultBox = root.querySelector('#gas-test-result');
 
     formGas?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const url = container.querySelector('#input-gas-url').value;
+      const url = root.querySelector('#input-gas-url').value;
       await this.cms.updateSettings({ gas_api_url: url });
       alert('URL Google Apps Script berhasil disimpan!');
       this.render(container);
     });
 
     // Test Ping
-    container.querySelector('#btn-test-gas')?.addEventListener('click', async () => {
-      const url = container.querySelector('#input-gas-url').value;
+    root.querySelector('#btn-test-gas')?.addEventListener('click', async () => {
+      const url = root.querySelector('#input-gas-url').value;
       resultBox.className = 'block p-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold';
       resultBox.textContent = 'Menghubungkan ke Google Apps Script...';
 
@@ -714,7 +717,7 @@ export class CmsView {
     });
 
     // Init Sheets
-    container.querySelector('#btn-init-sheets')?.addEventListener('click', async () => {
+    root.querySelector('#btn-init-sheets')?.addEventListener('click', async () => {
       resultBox.className = 'block p-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold';
       resultBox.textContent = 'Membuat 5 Tab Database di Google Spreadsheet...';
 
@@ -729,7 +732,7 @@ export class CmsView {
     });
 
     // Sync Data
-    container.querySelector('#btn-sync-data')?.addEventListener('click', async () => {
+    root.querySelector('#btn-sync-data')?.addEventListener('click', async () => {
       resultBox.className = 'block p-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold';
       resultBox.textContent = 'Menyinkronkan data katalog menu & pengaturan dari Sheets...';
 

@@ -33,7 +33,7 @@ export class ShiftView {
     const staffName = this.user.getFullName();
 
     container.innerHTML = `
-      <div class="min-h-screen bg-[#FAFDFB] flex flex-col pb-12">
+      <div id="shift-root" class="min-h-screen bg-[#FAFDFB] flex flex-col pb-12">
         
         <!-- Header -->
         <header class="bg-white border-b border-emerald-100 sticky top-0 z-20 shadow-xs">
@@ -83,7 +83,7 @@ export class ShiftView {
                 <p class="text-xs text-slate-500">Hitung total uang fisik di laci kasir (Modal Awal + Penjualan Tunai).</p>
               </div>
               <span class="text-xs font-bold px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200">
-                Kas Sistem Seharusnya: <strong>${this.formatRp(summary.totalSystemCash)}</strong>
+                Kas Sistem Seharusnya: <strong id="val-system-cash">${this.formatRp(summary.totalSystemCash)}</strong>
               </span>
             </div>
 
@@ -115,14 +115,14 @@ export class ShiftView {
               </div>
 
               <!-- Box Selisih Kas -->
-              <div class="p-4 rounded-2xl ${summary.cashDifference === 0 ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : (summary.cashDifference < 0 ? 'bg-red-50 border border-red-200 text-red-800' : 'bg-amber-50 border border-amber-200 text-amber-800')}">
+              <div id="box-diff-container" class="p-4 rounded-2xl ${summary.cashDifference === 0 ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : (summary.cashDifference < 0 ? 'bg-red-50 border border-red-200 text-red-800' : 'bg-amber-50 border border-amber-200 text-amber-800')}">
                 <div class="flex justify-between items-center">
                   <span class="text-xs font-bold uppercase">Status Selisih Kas:</span>
-                  <span class="text-xs font-bold px-2 py-0.5 rounded-full ${summary.cashDifference === 0 ? 'bg-emerald-200 text-emerald-900' : 'bg-red-200 text-red-900'}">
+                  <span id="badge-diff-status" class="text-xs font-bold px-2 py-0.5 rounded-full ${summary.cashDifference === 0 ? 'bg-emerald-200 text-emerald-900' : 'bg-red-200 text-red-900'}">
                     ${summary.cashDifference === 0 ? '✓ Tepat / Seimbang' : (summary.cashDifference < 0 ? 'Defisit / Kurang' : 'Surplus / Lebih')}
                   </span>
                 </div>
-                <div class="text-xl font-black mt-1">
+                <div id="val-cash-difference" class="text-xl font-black mt-1">
                   ${summary.cashDifference >= 0 ? '+' : ''}${this.formatRp(summary.cashDifference)}
                 </div>
               </div>
@@ -151,43 +151,70 @@ export class ShiftView {
     this.bindEvents(container);
   }
 
-  bindEvents(container) {
-    container.querySelector('#btn-back-to-pos')?.addEventListener('click', () => this.navigate('pos'));
+  updateDifferenceDisplay(root) {
+    const summary = this.shift.getCurrentSummary();
+    const diffContainer = root.querySelector('#box-diff-container');
+    const badgeStatus = root.querySelector('#badge-diff-status');
+    const valDiff = root.querySelector('#val-cash-difference');
 
-    // Input Actual Cash Manual
-    const actualCashInput = container.querySelector('#input-actual-cash');
+    if (diffContainer && badgeStatus && valDiff) {
+      if (summary.cashDifference === 0) {
+        diffContainer.className = 'p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800';
+        badgeStatus.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900';
+        badgeStatus.textContent = '✓ Tepat / Seimbang';
+      } else if (summary.cashDifference < 0) {
+        diffContainer.className = 'p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800';
+        badgeStatus.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-red-200 text-red-900';
+        badgeStatus.textContent = 'Defisit / Kurang';
+      } else {
+        diffContainer.className = 'p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800';
+        badgeStatus.className = 'text-xs font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900';
+        badgeStatus.textContent = 'Surplus / Lebih';
+      }
+      valDiff.textContent = (summary.cashDifference >= 0 ? '+' : '') + this.formatRp(summary.cashDifference);
+    }
+  }
+
+  bindEvents(container) {
+    const root = container.querySelector('#shift-root');
+    if (!root) return;
+
+    root.querySelector('#btn-back-to-pos')?.addEventListener('click', () => this.navigate('pos'));
+
+    // Input Actual Cash Manual - Update real-time tanpa reload DOM (menjaga kursor tetap fokus)
+    const actualCashInput = root.querySelector('#input-actual-cash');
     actualCashInput?.addEventListener('input', (e) => {
       this.shift.setActualCash(e.target.value);
-      this.render(container);
+      this.updateDifferenceDisplay(root);
     });
 
     // Kalkulator Pecahan
-    container.querySelectorAll('.input-denom').forEach(input => {
+    root.querySelectorAll('.input-denom').forEach(input => {
       input.addEventListener('input', () => {
         const denom = Number(input.getAttribute('data-denom'));
         const count = Number(input.value || 0);
         this.denominations[denom] = count;
 
-        // Hitung total dari semua denominasi
         let total = 0;
         for (let d in this.denominations) {
           total += Number(d) * this.denominations[d];
         }
         this.shift.setActualCash(total);
-        this.render(container);
+        if (actualCashInput) actualCashInput.value = total;
+        this.updateDifferenceDisplay(root);
       });
     });
 
     // Notes
-    const notesInput = container.querySelector('#shift-notes');
+    const notesInput = root.querySelector('#shift-notes');
     notesInput?.addEventListener('input', (e) => {
       this.shift.setNotes(e.target.value);
     });
 
     // Submit Shift Closing
-    container.querySelector('#btn-submit-shift')?.addEventListener('click', async () => {
+    root.querySelector('#btn-submit-shift')?.addEventListener('click', async () => {
       if (confirm('Konfirmasi simpan dan tutup shift kasir hari ini?')) {
-        const btn = container.querySelector('#btn-submit-shift');
+        const btn = root.querySelector('#btn-submit-shift');
         btn.disabled = true;
         btn.innerHTML = '<span>Menyimpan Laporan ke Spreadsheet...</span>';
 

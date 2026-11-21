@@ -15,7 +15,7 @@ export class LoginView {
     const branchSubtitle = this.settings.get('branch_subtitle', 'Depan PG-TK Al-Imam');
 
     container.innerHTML = `
-      <div class="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
+      <div id="login-root" class="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
         <!-- Background Decorative Circles -->
         <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-emerald-100/60 blur-2xl pointer-events-none"></div>
         <div class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-amber-100/60 blur-2xl pointer-events-none"></div>
@@ -94,29 +94,32 @@ export class LoginView {
   }
 
   bindEvents(container) {
-    const form = container.querySelector('#form-login');
-    const alertBox = container.querySelector('#login-alert');
-    const userInput = container.querySelector('#login-username');
-    const passInput = container.querySelector('#login-password');
-    const btnSubmit = container.querySelector('#btn-submit-login');
-    const togglePwd = container.querySelector('#toggle-pwd');
+    const root = container.querySelector('#login-root');
+    if (!root) return;
+
+    const form = root.querySelector('#form-login');
+    const alertBox = root.querySelector('#login-alert');
+    const userInput = root.querySelector('#login-username');
+    const passInput = root.querySelector('#login-password');
+    const btnSubmit = root.querySelector('#btn-submit-login');
+    const togglePwd = root.querySelector('#toggle-pwd');
 
     // Preset Cashier
-    container.querySelector('#btn-preset-cashier').addEventListener('click', async () => {
+    root.querySelector('#btn-preset-cashier')?.addEventListener('click', async () => {
       userInput.value = 'riza';
       passInput.value = '1234';
       await this.doSubmit(userInput.value, passInput.value, alertBox, btnSubmit);
     });
 
     // Preset Admin
-    container.querySelector('#btn-preset-admin').addEventListener('click', async () => {
+    root.querySelector('#btn-preset-admin')?.addEventListener('click', async () => {
       userInput.value = 'admin';
       passInput.value = 'admin123';
       await this.doSubmit(userInput.value, passInput.value, alertBox, btnSubmit);
     });
 
     // Toggle Password Visibility
-    togglePwd.addEventListener('click', () => {
+    togglePwd?.addEventListener('click', () => {
       if (passInput.type === 'password') {
         passInput.type = 'text';
         togglePwd.textContent = 'SEMBUNYI';
@@ -127,7 +130,7 @@ export class LoginView {
     });
 
     // Submit Form
-    form.addEventListener('submit', async (e) => {
+    form?.addEventListener('submit', async (e) => {
       e.preventDefault();
       await this.doSubmit(userInput.value, passInput.value, alertBox, btnSubmit);
     });

@@ -33,7 +33,7 @@ export class PosView {
     const cardRadius = this.settings.get('theme_card_style', 'rounded-2xl');
 
     container.innerHTML = `
-      <div class="min-h-screen bg-[#FAFDFB] flex flex-col pb-24 lg:pb-0">
+      <div id="pos-root" class="min-h-screen bg-[#FAFDFB] flex flex-col pb-24 lg:pb-0">
         
         <!-- HEADER / NAVBAR UTAMA -->
         <header class="bg-white border-b border-emerald-100/80 sticky top-0 z-30 shadow-sm shadow-emerald-900/5">
@@ -422,15 +422,13 @@ export class PosView {
             <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
               <div>
                 <span class="text-xs font-bold text-slate-500 block">Uang Kembalian:</span>
-                <span class="text-lg font-black ${change >= 0 && cashReceived >= total ? 'text-emerald-700' : 'text-red-600'}">
+                <span id="checkout-change-amount" class="text-lg font-black ${change >= 0 && cashReceived >= total ? 'text-emerald-700' : 'text-red-600'}">
                   ${this.formatRp(change)}
                 </span>
               </div>
-              ${cashReceived < total ? `
-                <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-lg">Kurang ${this.formatRp(total - cashReceived)}</span>
-              ` : `
-                <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">✓ Uang Cukup</span>
-              `}
+              <span id="checkout-change-badge" class="${cashReceived < total ? 'text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-lg' : 'text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg'}">
+                ${cashReceived < total ? `Kurang ${this.formatRp(total - cashReceived)}` : '✓ Uang Cukup'}
+              </span>
             </div>
           </div>
         ` : ''}
@@ -478,208 +476,212 @@ export class PosView {
     `;
   }
 
+  // BIND EVENTS: Terisolasi pada #pos-root untuk mencegah listener berganda
   bindEvents(container) {
+    const root = container.querySelector('#pos-root');
+    if (!root) return;
+
     // 1. Pencarian Real-Time
-    const searchInput = container.querySelector('#pos-search-input');
+    const searchInput = root.querySelector('#pos-search-input');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         this.pos.setSearch(e.target.value);
-        this.refreshProductGrid(container);
+        this.refreshProductGrid(root);
       });
     }
 
-    const clearSearch = container.querySelector('#btn-clear-search');
+    const clearSearch = root.querySelector('#btn-clear-search');
     if (clearSearch) {
       clearSearch.addEventListener('click', () => {
         this.pos.setSearch('');
         if (searchInput) searchInput.value = '';
-        this.refreshProductGrid(container);
+        this.refreshProductGrid(root);
       });
     }
 
-    // 2. Kategori Filter Pills
-    container.querySelectorAll('.cat-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cat = btn.getAttribute('data-category');
+    // 2. UNIFIED DELEGATED CLICK DISPATCHER (1x Eksekusi per Klik)
+    root.addEventListener('click', (e) => {
+      // Kategori Filter Pills
+      const catBtn = e.target.closest('.cat-pill');
+      if (catBtn) {
+        const cat = catBtn.getAttribute('data-category');
         this.pos.setCategory(cat);
-        // Update UI pill active
-        container.querySelectorAll('.cat-pill').forEach(b => {
+        root.querySelectorAll('.cat-pill').forEach(b => {
           b.className = 'cat-pill px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all bg-slate-100 text-slate-600 hover:bg-slate-200';
         });
-        btn.className = 'cat-pill px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all bg-emerald-800 text-white shadow-sm';
-        this.refreshProductGrid(container);
-      });
-    });
+        catBtn.className = 'cat-pill px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all bg-emerald-800 text-white shadow-sm';
+        this.refreshProductGrid(root);
+        return;
+      }
 
-    // 3. Tambah Produk ke Keranjang (Grid Click)
-    container.addEventListener('click', (e) => {
+      // Tambah Produk ke Keranjang (Klik Card atau Tombol +)
       const card = e.target.closest('.product-card');
-      if (card && !e.target.closest('.btn-add-item')) {
+      if (card) {
         const pId = card.getAttribute('data-product-id');
         this.pos.addToCart(pId);
-        this.refreshCart(container);
+        this.refreshCart(root);
+        return;
       }
-      if (e.target.closest('.btn-add-item')) {
-        const cardParent = e.target.closest('.product-card');
-        if (cardParent) {
-          const pId = cardParent.getAttribute('data-product-id');
-          this.pos.addToCart(pId);
-          this.refreshCart(container);
-        }
-      }
-    });
 
-    // 4. Stepper Keranjang (+ / - / delete)
-    container.addEventListener('click', (e) => {
+      // Stepper Minus Qty
       const btnMinus = e.target.closest('.btn-qty-minus');
       if (btnMinus) {
         const idx = Number(btnMinus.getAttribute('data-index'));
         this.pos.decreaseQty(idx);
-        this.refreshCart(container);
+        this.refreshCart(root);
+        return;
       }
 
+      // Stepper Plus Qty
       const btnPlus = e.target.closest('.btn-qty-plus');
       if (btnPlus) {
         const idx = Number(btnPlus.getAttribute('data-index'));
         this.pos.increaseQty(idx);
-        this.refreshCart(container);
+        this.refreshCart(root);
+        return;
       }
 
       // Edit Note Minuman
       const btnNote = e.target.closest('.btn-edit-note');
       if (btnNote) {
         const idx = Number(btnNote.getAttribute('data-index'));
-        this.openNotesModal(container, idx);
+        this.openNotesModal(root, idx);
+        return;
       }
-    });
 
-    // Kosongkan Keranjang
-    container.addEventListener('click', (e) => {
+      // Kosongkan Keranjang
       if (e.target.id === 'btn-clear-cart') {
         if (confirm('Yakin ingin mengosongkan keranjang pesanan?')) {
           this.pos.clearCart();
-          this.refreshCart(container);
+          this.refreshCart(root);
         }
+        return;
       }
-    });
 
-    // 5. Navigasi Cepat
-    container.querySelector('#nav-btn-history')?.addEventListener('click', () => this.navigate('history'));
-    container.querySelector('#nav-btn-shift')?.addEventListener('click', () => this.navigate('shift'));
-    container.querySelector('#nav-btn-cms')?.addEventListener('click', () => this.navigate('cms'));
-    container.querySelector('#nav-btn-logout')?.addEventListener('click', () => this.navigate('logout'));
+      // Navigasi Cepat
+      if (e.target.closest('#nav-btn-history')) { this.navigate('history'); return; }
+      if (e.target.closest('#nav-btn-shift')) { this.navigate('shift'); return; }
+      if (e.target.closest('#nav-btn-cms')) { this.navigate('cms'); return; }
+      if (e.target.closest('#nav-btn-logout')) { this.navigate('logout'); return; }
 
-    // 6. Mobile Drawer Toggle
-    container.querySelector('#btn-toggle-cart-mobile')?.addEventListener('click', () => {
-      this.isCartOpenMobile = true;
-      this.refreshMobileDrawer(container);
-    });
-    container.querySelector('#btn-close-cart-drawer')?.addEventListener('click', () => {
-      this.isCartOpenMobile = false;
-      this.refreshMobileDrawer(container);
-    });
+      // Mobile Drawer Toggle
+      if (e.target.closest('#btn-toggle-cart-mobile')) {
+        this.isCartOpenMobile = true;
+        this.refreshMobileDrawer(root);
+        return;
+      }
+      if (e.target.closest('#btn-close-cart-drawer')) {
+        this.isCartOpenMobile = false;
+        this.refreshMobileDrawer(root);
+        return;
+      }
 
-    // 7. Buka Modal Pembayaran (Checkout)
-    container.addEventListener('click', (e) => {
+      // Buka Modal Pembayaran (Checkout)
       if (e.target.closest('#btn-open-checkout') || e.target.closest('#btn-quick-checkout-mobile')) {
         this.isCartOpenMobile = false;
-        this.refreshMobileDrawer(container);
-        this.openCheckoutModal(container);
+        this.refreshMobileDrawer(root);
+        this.openCheckoutModal(root);
+        return;
       }
-    });
 
-    this.bindCheckoutModalEvents(container);
-    this.bindNotesModalEvents(container);
-  }
-
-  // Event Handler Modal Pembayaran
-  bindCheckoutModalEvents(container) {
-    const modal = container.querySelector('#modal-checkout');
-
-    // Tutup / Batal Modal
-    container.addEventListener('click', (e) => {
+      // Tutup / Batal Modal Checkout
       if (e.target.id === 'btn-close-checkout-modal' || e.target.id === 'btn-cancel-checkout') {
-        modal.classList.add('hidden');
+        root.querySelector('#modal-checkout')?.classList.add('hidden');
+        return;
       }
-    });
 
-    // Ganti Metode Bayar Tab
-    container.addEventListener('click', (e) => {
-      const tab = e.target.closest('.btn-pay-tab');
-      if (tab) {
-        const method = tab.getAttribute('data-method');
+      // Ganti Tab Metode Bayar
+      const payTab = e.target.closest('.btn-pay-tab');
+      if (payTab) {
+        const method = payTab.getAttribute('data-method');
         this.activePaymentMethod = method;
         this.pos.setPaymentMethod(method);
-        modal.querySelector('.bg-white').innerHTML = this.renderCheckoutModalContent();
+        const modalContent = root.querySelector('#modal-checkout .bg-white');
+        if (modalContent) modalContent.innerHTML = this.renderCheckoutModalContent();
+        return;
       }
-    });
 
-    // Input Uang Tunai Real-Time
-    container.addEventListener('input', (e) => {
-      if (e.target.id === 'input-cash-received') {
-        this.pos.setCashReceived(e.target.value);
-        this.updateCashChangeDisplay(container);
-      }
-    });
-
-    // Quick Cash Buttons
-    container.addEventListener('click', (e) => {
+      // Preset Uang Cepat (Pas, 10k, 20k, 50k, 100k)
       const btnCash = e.target.closest('.btn-quick-cash');
       if (btnCash) {
         const val = btnCash.getAttribute('data-cash');
         this.pos.setQuickCash(val);
-        const inputCash = container.querySelector('#input-cash-received');
+        const inputCash = root.querySelector('#input-cash-received');
         if (inputCash) inputCash.value = this.tx.cashReceived;
-        this.updateCashChangeDisplay(container);
+        this.updateCashChangeDisplay(root);
+        return;
       }
-    });
 
-    // Konfirmasi Pembayaran Selesai
-    container.addEventListener('click', async (e) => {
+      // Konfirmasi Pembayaran
       if (e.target.closest('#btn-confirm-payment')) {
-        const btn = e.target.closest('#btn-confirm-payment');
-        btn.disabled = true;
-        btn.innerHTML = '<span>Menyimpan Transaksi...</span>';
-
-        try {
-          const result = await this.pos.processCheckout();
-          modal.classList.add('hidden');
-          this.refreshCart(container);
-          this.openReceiptSuccessModal(container, result.transaction);
-        } catch (err) {
-          alert(err.message || 'Pembayaran gagal');
-          btn.disabled = false;
-          btn.innerHTML = '<span>KONFIRMASI PEMBAYARAN</span>';
-        }
+        this.handleConfirmPayment(root);
+        return;
       }
     });
+
+    // 3. Input Uang Tunai Real-Time (Tanpa merusak DOM input)
+    root.addEventListener('input', (e) => {
+      if (e.target.id === 'input-cash-received') {
+        this.pos.setCashReceived(e.target.value);
+        this.updateCashChangeDisplay(root);
+      }
+    });
+
+    this.bindNotesModalEvents(root);
   }
 
-  // Update Tampilan Kembalian secara Cepat
-  updateCashChangeDisplay(container) {
+  // Update Tampilan Kembalian secara Presisi tanpa Re-render Seluruh Modal
+  updateCashChangeDisplay(root) {
     const total = this.tx.getTotalAmount();
     const cash = this.tx.cashReceived;
     const change = this.tx.getChange();
-    const btnConfirm = container.querySelector('#btn-confirm-payment');
+    const btnConfirm = root.querySelector('#btn-confirm-payment');
+    const changeAmt = root.querySelector('#checkout-change-amount');
+    const changeBadge = root.querySelector('#checkout-change-badge');
 
     if (btnConfirm) {
       btnConfirm.disabled = !this.tx.isCheckoutValid();
     }
-    const modalContent = container.querySelector('#modal-checkout .bg-white');
-    if (modalContent) {
-      modalContent.innerHTML = this.renderCheckoutModalContent();
-      const input = container.querySelector('#input-cash-received');
-      if (input) {
-        input.focus();
-        input.setSelectionRange(input.value.length, input.value.length);
+    if (changeAmt) {
+      changeAmt.textContent = this.formatRp(change);
+      changeAmt.className = `text-lg font-black ${change >= 0 && cash >= total ? 'text-emerald-700' : 'text-red-600'}`;
+    }
+    if (changeBadge) {
+      if (cash < total) {
+        changeBadge.className = 'text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-lg';
+        changeBadge.textContent = `Kurang ${this.formatRp(total - cash)}`;
+      } else {
+        changeBadge.className = 'text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg';
+        changeBadge.textContent = '✓ Uang Cukup';
+      }
+    }
+  }
+
+  async handleConfirmPayment(root) {
+    const btn = root.querySelector('#btn-confirm-payment');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>Menyimpan Transaksi...</span>';
+    }
+
+    try {
+      const result = await this.pos.processCheckout();
+      root.querySelector('#modal-checkout')?.classList.add('hidden');
+      this.refreshCart(root);
+      this.openReceiptSuccessModal(root, result.transaction);
+    } catch (err) {
+      alert(err.message || 'Pembayaran gagal');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>KONFIRMASI PEMBAYARAN</span>';
       }
     }
   }
 
   // Buka Modal Sukses & Pratinjau Struk
-  openReceiptSuccessModal(container, tx) {
-    const modal = container.querySelector('#modal-receipt-success');
-    const body = container.querySelector('#receipt-modal-body');
+  openReceiptSuccessModal(root, tx) {
+    const modal = root.querySelector('#modal-receipt-success');
+    const body = root.querySelector('#receipt-modal-body');
 
     body.innerHTML = `
       <div class="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl font-black">
@@ -726,61 +728,61 @@ export class PosView {
 
     modal.classList.remove('hidden');
 
-    container.querySelector('#btn-print-receipt-modal')?.addEventListener('click', () => {
+    root.querySelector('#btn-print-receipt-modal')?.addEventListener('click', () => {
       this.pos.printReceipt(tx);
     });
 
-    container.querySelector('#btn-share-wa-modal')?.addEventListener('click', () => {
-      const phone = container.querySelector('#input-wa-phone').value;
+    root.querySelector('#btn-share-wa-modal')?.addEventListener('click', () => {
+      const phone = root.querySelector('#input-wa-phone').value;
       this.pos.shareWhatsApp(tx, phone);
     });
 
-    container.querySelector('#btn-next-transaction')?.addEventListener('click', () => {
+    root.querySelector('#btn-next-transaction')?.addEventListener('click', () => {
       modal.classList.add('hidden');
     });
   }
 
   // Modal Catatan Item
-  openNotesModal(container, itemIndex) {
+  openNotesModal(root, itemIndex) {
     this.editingNotesItemIndex = itemIndex;
-    const modal = container.querySelector('#modal-item-notes');
-    const input = container.querySelector('#custom-note-input');
+    const modal = root.querySelector('#modal-item-notes');
+    const input = root.querySelector('#custom-note-input');
     input.value = this.tx.cart[itemIndex].notes || '';
     modal.classList.remove('hidden');
   }
 
-  bindNotesModalEvents(container) {
-    const modal = container.querySelector('#modal-item-notes');
-    const input = container.querySelector('#custom-note-input');
+  bindNotesModalEvents(root) {
+    const modal = root.querySelector('#modal-item-notes');
+    const input = root.querySelector('#custom-note-input');
 
-    container.querySelectorAll('.btn-note-preset').forEach(btn => {
+    root.querySelectorAll('.btn-note-preset').forEach(btn => {
       btn.addEventListener('click', () => {
         input.value = btn.getAttribute('data-note');
       });
     });
 
-    container.querySelector('#btn-cancel-note')?.addEventListener('click', () => {
+    root.querySelector('#btn-cancel-note')?.addEventListener('click', () => {
       modal.classList.add('hidden');
     });
 
-    container.querySelector('#btn-save-note')?.addEventListener('click', () => {
+    root.querySelector('#btn-save-note')?.addEventListener('click', () => {
       if (this.editingNotesItemIndex !== null) {
         this.pos.updateItemNotes(this.editingNotesItemIndex, input.value || 'Normal Ice & Sugar');
         modal.classList.add('hidden');
-        this.refreshCart(container);
+        this.refreshCart(root);
       }
     });
   }
 
-  openCheckoutModal(container) {
-    const modal = container.querySelector('#modal-checkout');
+  openCheckoutModal(root) {
+    const modal = root.querySelector('#modal-checkout');
     this.pos.setPaymentMethod(this.activePaymentMethod);
     modal.querySelector('.bg-white').innerHTML = this.renderCheckoutModalContent();
     modal.classList.remove('hidden');
   }
 
-  refreshProductGrid(container) {
-    const grid = container.querySelector('#product-grid');
+  refreshProductGrid(root) {
+    const grid = root.querySelector('#product-grid');
     if (grid) {
       grid.innerHTML = this.renderProductCards(
         this.settings.get('show_images_in_pos', true),
@@ -789,15 +791,15 @@ export class PosView {
     }
   }
 
-  refreshCart(container) {
+  refreshCart(root) {
     // Refresh Desktop Sidebar
-    const aside = container.querySelector('aside');
+    const aside = root.querySelector('aside');
     if (aside) aside.innerHTML = this.renderCartContent();
 
     // Refresh Mobile Floating Bar
     const totalItems = this.tx.getTotalItems();
     const totalAmt = this.formatRp(this.tx.getTotalAmount());
-    const mobileBtn = container.querySelector('#btn-toggle-cart-mobile');
+    const mobileBtn = root.querySelector('#btn-toggle-cart-mobile');
     if (mobileBtn) {
       mobileBtn.innerHTML = `
         <div class="flex items-center gap-2">
@@ -807,17 +809,17 @@ export class PosView {
         <span class="text-sm font-black text-amber-300">${totalAmt}</span>
       `;
     }
-    const quickCheckout = container.querySelector('#btn-quick-checkout-mobile');
+    const quickCheckout = root.querySelector('#btn-quick-checkout-mobile');
     if (quickCheckout) {
       quickCheckout.disabled = this.tx.cart.length === 0;
     }
 
     // Refresh Drawer
-    this.refreshMobileDrawer(container);
+    this.refreshMobileDrawer(root);
   }
 
-  refreshMobileDrawer(container) {
-    const drawer = container.querySelector('#mobile-cart-drawer');
+  refreshMobileDrawer(root) {
+    const drawer = root.querySelector('#mobile-cart-drawer');
     if (drawer) {
       if (this.isCartOpenMobile) {
         drawer.className = 'lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 transition-opacity opacity-100 pointer-events-auto';

@@ -33,8 +33,10 @@ export class TransactionModel {
   }
 
   // Tambah item produk ke keranjang
-  addItem(product, notes = '') {
+  addItem(product, customNotes = '') {
+    const notes = customNotes || 'Normal Ice & Sugar';
     const existingIndex = this.cart.findIndex(item => item.product_id === product.id && item.notes === notes);
+    
     if (existingIndex >= 0) {
       this.cart[existingIndex].qty += 1;
       this.cart[existingIndex].subtotal = this.cart[existingIndex].qty * this.cart[existingIndex].price;
@@ -46,7 +48,7 @@ export class TransactionModel {
         price: Number(product.price),
         qty: 1,
         subtotal: Number(product.price),
-        notes: notes || 'Normal Ice & Sugar',
+        notes: notes,
         image_url: product.image_url || ''
       });
     }
