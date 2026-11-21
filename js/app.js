@@ -66,6 +66,7 @@ class App {
 
     this.historyController = new HistoryController(
       this.transactionModel,
+      this.apiService,
       this.printService
     );
 
@@ -118,6 +119,28 @@ class App {
     );
 
     this.setupRouter();
+    this.syncInitialData();
+  }
+
+  // Sinkronisasi data awal & berkala dari Google Apps Script secara real-time
+  async syncInitialData() {
+    if (!this.apiService || !this.apiService.isGasConfigured()) return;
+    try {
+      const data = await this.apiService.fetchAllData();
+      if (data) {
+        if (data.products && Array.isArray(data.products)) {
+          this.productModel.setProducts(data.products);
+        }
+        if (data.settings && typeof data.settings === 'object') {
+          this.settingsModel.updateMultiple(data.settings);
+        }
+        if (data.recentTransactions && Array.isArray(data.recentTransactions)) {
+          this.transactionModel.mergeTransactionsFromGas(data.recentTransactions);
+        }
+      }
+    } catch (e) {
+      console.warn('Sync background berjalan:', e);
+    }
   }
 
   // Notifikasi Toast Ringan

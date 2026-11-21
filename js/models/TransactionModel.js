@@ -32,6 +32,72 @@ export class TransactionModel {
     localStorage.setItem('tehpoci_transactions', JSON.stringify(this.transactionsHistory));
   }
 
+  // Sinkronisasi & gabungkan transaksi dari Google Spreadsheet ke Local History
+  mergeTransactionsFromGas(gasTransactions) {
+    if (!Array.isArray(gasTransactions) || gasTransactions.length === 0) return;
+
+    gasTransactions.forEach(gasTx => {
+      // 1. Parse items jika masih berupa items_json string
+      let items = gasTx.items;
+      if (!items && gasTx.items_json) {
+        try {
+          items = typeof gasTx.items_json === 'string' ? JSON.parse(gasTx.items_json) : gasTx.items_json;
+        } catch (e) {
+          items = [];
+        }
+      }
+
+      // 2. Generate display_date & display_time jika belum ada
+      let dDate = gasTx.display_date;
+      let dTime = gasTx.display_time;
+      if (!dDate || !dTime) {
+        try {
+          const dt = new Date(gasTx.timestamp);
+          if (!isNaN(dt.getTime())) {
+            dDate = dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            dTime = dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          }
+        } catch (e) {
+          dDate = '';
+          dTime = '';
+        }
+      }
+
+      const normalized = {
+        id: gasTx.id || ('TX-' + Date.now()),
+        invoice_number: gasTx.invoice_number,
+        timestamp: gasTx.timestamp,
+        display_date: dDate,
+        display_time: dTime,
+        cashier_id: gasTx.cashier_id || 'STF-01',
+        cashier_name: gasTx.cashier_name || 'Kasir Booth',
+        branch_code: gasTx.branch_code || 'LPR-01',
+        items: Array.isArray(items) ? items : [],
+        total_items: Number(gasTx.total_items || (Array.isArray(items) ? items.reduce((s, it) => s + (it.qty || 1), 0) : 0)),
+        subtotal: Number(gasTx.subtotal || 0),
+        discount: Number(gasTx.discount || 0),
+        total_amount: Number(gasTx.total_amount || 0),
+        payment_method: gasTx.payment_method || 'Tunai',
+        cash_received: Number(gasTx.cash_received || gasTx.total_amount || 0),
+        cash_change: Number(gasTx.cash_change || 0),
+        payment_status: gasTx.payment_status || 'PAID',
+        notes: gasTx.notes || ''
+      };
+
+      // Cek apakah invoice_number sudah ada di transactionsHistory
+      const existingIdx = this.transactionsHistory.findIndex(t => t.invoice_number === normalized.invoice_number);
+      if (existingIdx >= 0) {
+        this.transactionsHistory[existingIdx] = { ...this.transactionsHistory[existingIdx], ...normalized };
+      } else {
+        this.transactionsHistory.push(normalized);
+      }
+    });
+
+    // Urutkan berdasarkan waktu transaksi terbaru (descending)
+    this.transactionsHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    this.saveHistory();
+  }
+
   // Tambah item produk ke keranjang
   addItem(product, customNotes = '') {
     const notes = customNotes || 'Normal Ice & Sugar';

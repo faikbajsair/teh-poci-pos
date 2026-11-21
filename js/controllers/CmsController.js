@@ -78,6 +78,9 @@ export class CmsController {
       if (data.settings && typeof data.settings === 'object') {
         this.settingsModel.updateMultiple(data.settings);
       }
+      if (data.recentTransactions && Array.isArray(data.recentTransactions)) {
+        this.transactionModel.mergeTransactionsFromGas(data.recentTransactions);
+      }
       return data;
     }
     throw new Error('Data tidak dapat dimuat dari Google Sheets.');

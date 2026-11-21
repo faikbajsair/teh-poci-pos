@@ -42,15 +42,22 @@ export class HistoryView {
               </div>
             </div>
 
-            <!-- Ringkasan Cepat -->
-            <div class="hidden sm:flex items-center gap-3">
-              <div class="text-right">
-                <span class="text-[10px] text-slate-400 font-bold uppercase block">Total Transaksi</span>
-                <span id="history-sum-count" class="text-xs font-black text-slate-800">${summary.count} Trx (${summary.totalCups} Cup)</span>
-              </div>
-              <div class="text-right pl-3 border-l border-slate-200">
-                <span class="text-[10px] text-slate-400 font-bold uppercase block">Total Omzet</span>
-                <span id="history-sum-amount" class="text-sm font-black text-emerald-800">${this.formatRp(summary.totalAmount)}</span>
+            <!-- Action & Ringkasan Cepat -->
+            <div class="flex items-center gap-2 sm:gap-3">
+              <button id="btn-sync-history" class="p-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#0B5834] font-bold text-xs flex items-center gap-1.5 transition border border-emerald-200 active:scale-95 shadow-xs" title="Ambil riwayat transaksi terbaru dari Google Spreadsheet">
+                <span id="icon-sync-spin">🔄</span>
+                <span class="text-[11px] font-black">Sinkronkan Sheets</span>
+              </button>
+
+              <div class="hidden sm:flex items-center gap-3">
+                <div class="text-right">
+                  <span class="text-[10px] text-slate-400 font-bold uppercase block">Total Transaksi</span>
+                  <span id="history-sum-count" class="text-xs font-black text-slate-800">${summary.count} Trx (${summary.totalCups} Cup)</span>
+                </div>
+                <div class="text-right pl-3 border-l border-slate-200">
+                  <span class="text-[10px] text-slate-400 font-bold uppercase block">Total Omzet</span>
+                  <span id="history-sum-amount" class="text-sm font-black text-emerald-800">${this.formatRp(summary.totalAmount)}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -118,41 +125,63 @@ export class HistoryView {
       `;
     }
 
-    return list.map(tx => `
-      <tr class="hover:bg-emerald-50/40 transition">
-        <td class="p-3.5">
-          <div class="font-bold text-slate-900">${tx.invoice_number}</div>
-          <div class="text-[10px] text-slate-400">${tx.display_date || ''} ${tx.display_time || ''}</div>
-        </td>
-        <td class="p-3.5 font-medium text-slate-700">
-          ${tx.cashier_name}
-        </td>
-        <td class="p-3.5">
-          <div class="font-semibold text-slate-800">${tx.total_items} Cup</div>
-          <div class="text-[10px] text-slate-500 truncate max-w-xs">
-            ${(tx.items || []).map(i => `${i.qty}x ${i.name}`).join(', ')}
-          </div>
-        </td>
-        <td class="p-3.5">
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${tx.payment_method === 'Tunai' ? 'bg-emerald-100 text-emerald-800' : (tx.payment_method === 'QRIS' ? 'bg-sky-100 text-sky-800' : 'bg-purple-100 text-purple-800')}">
-            ${tx.payment_method}
-          </span>
-        </td>
-        <td class="p-3.5 text-right font-black text-slate-900">
-          ${this.formatRp(tx.total_amount)}
-        </td>
-        <td class="p-3.5 text-center">
-          <div class="flex items-center justify-center gap-1">
-            <button type="button" class="btn-reprint px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700" data-inv="${tx.invoice_number}" title="Cetak Ulang Struk">
-              🖨️ Struk
-            </button>
-            <button type="button" class="btn-share-wa px-2 py-1 bg-emerald-50 hover:bg-emerald-100 rounded-lg text-[11px] font-bold text-emerald-800" data-inv="${tx.invoice_number}" title="Kirim Struk WA">
-              📱 WA
-            </button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    return list.map(tx => {
+      // Normalisasi item dan tanggal
+      let itemsList = Array.isArray(tx.items) ? tx.items : [];
+      if (itemsList.length === 0 && tx.items_json) {
+        try {
+          itemsList = typeof tx.items_json === 'string' ? JSON.parse(tx.items_json) : tx.items_json;
+        } catch (e) { itemsList = []; }
+      }
+
+      let dateDisplay = tx.display_date || '';
+      let timeDisplay = tx.display_time || '';
+      if (!dateDisplay && tx.timestamp) {
+        try {
+          const d = new Date(tx.timestamp);
+          if (!isNaN(d.getTime())) {
+            dateDisplay = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            timeDisplay = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          }
+        } catch (e) {}
+      }
+
+      return `
+        <tr class="hover:bg-emerald-50/40 transition">
+          <td class="p-3.5">
+            <div class="font-bold text-slate-900">${tx.invoice_number}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${dateDisplay} ${timeDisplay}</div>
+          </td>
+          <td class="p-3.5 font-medium text-slate-700">
+            ${tx.cashier_name}
+          </td>
+          <td class="p-3.5">
+            <div class="font-semibold text-slate-800">${tx.total_items} Cup</div>
+            <div class="text-[10px] text-slate-500 truncate max-w-xs" title="${itemsList.map(i => `${i.qty}x ${i.name}`).join(', ')}">
+              ${itemsList.length > 0 ? itemsList.map(i => `${i.qty}x ${i.name}`).join(', ') : '-'}
+            </div>
+          </td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${tx.payment_method === 'Tunai' ? 'bg-emerald-100 text-emerald-800' : (tx.payment_method === 'QRIS' ? 'bg-sky-100 text-sky-800' : 'bg-purple-100 text-purple-800')}">
+              ${tx.payment_method}
+            </span>
+          </td>
+          <td class="p-3.5 text-right font-black text-slate-900">
+            ${this.formatRp(tx.total_amount)}
+          </td>
+          <td class="p-3.5 text-center">
+            <div class="flex items-center justify-center gap-1">
+              <button type="button" class="btn-reprint px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700" data-inv="${tx.invoice_number}" title="Cetak Ulang Struk">
+                🖨️ Struk
+              </button>
+              <button type="button" class="btn-share-wa px-2 py-1 bg-emerald-50 hover:bg-emerald-100 rounded-lg text-[11px] font-bold text-emerald-800" data-inv="${tx.invoice_number}" title="Kirim Struk WA">
+                📱 WA
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   }
 
   refreshTableOnly(root) {
@@ -192,6 +221,26 @@ export class HistoryView {
     const paymentSelect = root.querySelector('#history-payment-filter');
     paymentSelect?.addEventListener('change', (e) => {
       this.history.filterPayment = e.target.value;
+      this.refreshTableOnly(root);
+    });
+
+    // Tombol Manual Sinkronisasi Google Sheets
+    const btnSync = root.querySelector('#btn-sync-history');
+    btnSync?.addEventListener('click', async () => {
+      const icon = root.querySelector('#icon-sync-spin');
+      if (icon) icon.classList.add('animate-spin');
+      btnSync.disabled = true;
+      try {
+        await this.history.syncTransactionsFromGas();
+        this.refreshTableOnly(root);
+      } finally {
+        if (icon) icon.classList.remove('animate-spin');
+        btnSync.disabled = false;
+      }
+    });
+
+    // Otomatis sinkronisasi data terbaru dari Google Spreadsheet saat halaman dibuka
+    this.history.syncTransactionsFromGas().then(() => {
       this.refreshTableOnly(root);
     });
 
