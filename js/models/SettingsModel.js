@@ -54,8 +54,8 @@ export class SettingsModel {
       compact_receipt: false,
 
       // 3. Konfigurasi Backend & Google Sheets API
-      gas_api_url: '', // URL Google Apps Script Web App (diisi oleh pengguna / owner)
-      offline_demo_mode: false, // Jika true atau GAS kosong, gunakan data mock lokal
+      gas_api_url: 'https://script.google.com/macros/s/AKfycbycgWuPY6FHaVFZ-HhZIgpPhxOJX_tIBtPvmxQC_c8N8fNdA8KzTKu07F9SsChPQHE/exec', // URL Google Apps Script Web App
+      offline_demo_mode: false, // Terhubung langsung ke Google Spreadsheet Live
 
       // 4. Lisensi / Profil Klien Multi-Tenant
       client_name: 'Pak Faik - Mitra Teh Poci',
