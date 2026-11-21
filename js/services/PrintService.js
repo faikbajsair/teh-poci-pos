@@ -47,7 +47,8 @@ export class PrintService {
       ">
         <!-- Logo & Header -->
         <div style="text-align: center; margin-bottom: 12px;">
-          <div style="font-size: 18px; font-weight: 900; letter-spacing: 1px; color: #146C36;">
+          <img src="assets/img/logo-teh-poci.png" alt="Teh Poci Logo" style="max-height: 48px; margin: 0 auto 6px auto; display: block;" onerror="this.style.display='none'"/>
+          <div style="font-size: 18px; font-weight: 900; letter-spacing: 1px; color: #0B5834;">
             ${brandName.toUpperCase()}
           </div>
           <div style="font-size: 11px; font-weight: bold; margin-top: 2px;">
@@ -103,7 +104,7 @@ export class PrintService {
             <span>${this.formatRupiah(tx.subtotal)}</span>
           </div>
           ${tx.discount > 0 ? `
-          <div style="display:flex; justify-content:space-between; margin-bottom:2px; color:#d9232e;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:2px; color:#E31E24;">
             <span>Diskon:</span>
             <span>-${this.formatRupiah(tx.discount)}</span>
           </div>` : ''}

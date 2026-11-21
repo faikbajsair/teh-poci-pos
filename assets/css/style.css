@@ -5,11 +5,11 @@
  */
 
 :root {
-  --color-primary: #146C36;
-  --color-accent: #55A630;
-  --color-poci-red: #D9232E;
-  --color-bright-yellow: #FFD600;
-  --bg-clean: #FAFDFB;
+  --color-primary: #0B5834;
+  --color-accent: #63B846;
+  --color-poci-red: #E31E24;
+  --color-bright-yellow: #FEDE00;
+  --bg-clean: #F8FCF9;
 }
 
 /* Base Font & Body */

@@ -30,20 +30,26 @@ export class CmsView {
     container.innerHTML = `
       <div id="cms-root" class="min-h-screen bg-slate-50 flex flex-col pb-12">
         
+        <!-- Top Signature Tricolor Accent Bar (Kuning, Merah, Hijau Poci) -->
+        <div class="h-1.5 w-full bg-gradient-to-r from-[#FEDE00] via-[#E31E24] to-[#0B5834]"></div>
+
         <!-- Header Admin -->
         <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
-          <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <button id="btn-back-to-pos" class="p-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 font-bold text-xs flex items-center gap-1 transition">
+              <button id="btn-back-to-pos" class="p-2 rounded-xl bg-slate-100 hover:bg-[#0B5834]/10 text-slate-700 font-bold text-xs flex items-center gap-1 transition">
                 <span>←</span>
                 <span>Kembali ke POS</span>
               </button>
-              <div>
-                <h1 class="text-base font-black text-slate-900 flex items-center gap-2">
-                  <span>Dashboard Pemilik & CMS</span>
-                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200">ADMIN</span>
-                </h1>
-                <p class="text-xs text-slate-500">${brandName} — ${branchName}</p>
+              <div class="flex items-center gap-2.5">
+                <img src="assets/img/logo-teh-poci.png" alt="Logo Teh Poci" class="h-9 w-auto object-contain">
+                <div>
+                  <h1 class="text-base font-black text-slate-900 flex items-center gap-2">
+                    <span>Dashboard Pemilik & CMS</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200">ADMIN</span>
+                  </h1>
+                  <p class="text-xs text-slate-500">${brandName} — ${branchName}</p>
+                </div>
               </div>
             </div>
 
@@ -257,6 +263,18 @@ export class CmsView {
         </div>
 
         <form id="form-brand-settings" class="space-y-4 text-xs">
+          <!-- Logo Brand Display & Customizer -->
+          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-4">
+            <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center shrink-0">
+              <img id="brand-logo-preview" src="${this.settings.get('logo_url', 'assets/img/logo-teh-poci.png')}" alt="Logo" class="max-w-full max-h-full object-contain">
+            </div>
+            <div class="flex-1">
+              <label class="block font-bold text-slate-700 mb-1">Path / URL Logo Resmi Brand</label>
+              <input type="text" id="set-logo-url" value="${this.settings.get('logo_url', 'assets/img/logo-teh-poci.png')}" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-[11px] outline-none focus:border-emerald-600">
+              <span class="text-[10px] text-slate-400 mt-1 block">Default logo resmi: assets/img/logo-teh-poci.png</span>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block font-bold text-slate-700 mb-1">Nama Brand Utama</label>
@@ -551,6 +569,7 @@ export class CmsView {
       formBrand.addEventListener('submit', async (e) => {
         e.preventDefault();
         const newSettings = {
+          logo_url: root.querySelector('#set-logo-url')?.value || 'assets/img/logo-teh-poci.png',
           brand_name: root.querySelector('#set-brand-name').value,
           branch_name: root.querySelector('#set-branch-name').value,
           branch_subtitle: root.querySelector('#set-branch-subtitle').value,

@@ -33,21 +33,24 @@ export class PosView {
     const cardRadius = this.settings.get('theme_card_style', 'rounded-2xl');
 
     container.innerHTML = `
-      <div id="pos-root" class="min-h-screen bg-[#FAFDFB] flex flex-col pb-24 lg:pb-0">
+      <div id="pos-root" class="min-h-screen bg-[#F8FCF9] flex flex-col pb-24 lg:pb-0">
         
+        <!-- TEH POCI BRAND TOP ACCENT STRIPE -->
+        <div class="h-1.5 w-full bg-gradient-to-r from-[#FEDE00] via-[#E31E24] to-[#0B5834]"></div>
+
         <!-- HEADER / NAVBAR UTAMA -->
         <header class="bg-white border-b border-emerald-100/80 sticky top-0 z-30 shadow-sm shadow-emerald-900/5">
-          <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+          <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2">
             
-            <!-- Brand & Info Cabang -->
+            <!-- Brand & Info Cabang dengan Logo Asli Teh Poci -->
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-800 p-1.5 shadow flex-shrink-0">
-                <img src="assets/img/logo-teh-poci.svg" alt="Teh Poci" class="w-full h-full object-contain">
+              <div class="flex-shrink-0">
+                <img src="assets/img/logo-teh-poci.png" alt="Logo Asli Teh Poci" class="h-10 sm:h-12 w-auto object-contain filter drop-shadow-sm hover:scale-105 transition-transform">
               </div>
               <div class="leading-tight">
                 <div class="flex items-center gap-2">
-                  <h1 class="text-base sm:text-lg font-black text-emerald-900 tracking-tight">${brandName}</h1>
-                  <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">POS KASIR</span>
+                  <h1 class="text-base sm:text-lg font-black text-[#0B5834] tracking-tight">TEH <span class="text-[#E31E24]">POCI</span></h1>
+                  <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-black bg-[#FEDE00] text-[#0B5834] border border-[#0B5834]/20 shadow-xs">POS KASIR</span>
                 </div>
                 <p class="text-[11px] sm:text-xs text-slate-500 font-medium truncate max-w-[200px] sm:max-w-md">
                   Cabang Limus Pratama Regensi (Depan PG-TK Al-Imam)
@@ -59,32 +62,32 @@ export class PosView {
             <div class="flex items-center gap-1.5 sm:gap-2">
               
               <!-- Indikator Integrasi GAS / Offline -->
-              <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${isGasActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
-                <span class="w-2 h-2 rounded-full ${isGasActive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}"></span>
+              <div class="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${isGasActive ? 'bg-emerald-50 text-[#0B5834] border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
+                <span class="w-2 h-2 rounded-full ${isGasActive ? 'bg-[#63B846] animate-pulse' : 'bg-amber-500'}"></span>
                 <span>${isGasActive ? 'Sheets Terhubung' : 'Mode Offline / Demo'}</span>
               </div>
 
               <!-- Menu Navigasi Utama -->
-              <button id="nav-btn-history" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 text-xs font-bold transition flex items-center gap-1">
+              <button id="nav-btn-history" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-[#0B5834] text-slate-700 text-xs font-bold transition flex items-center gap-1">
                 <span>📋</span>
                 <span class="hidden sm:inline">Riwayat</span>
               </button>
 
-              <button id="nav-btn-shift" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 text-xs font-bold transition flex items-center gap-1">
+              <button id="nav-btn-shift" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-emerald-50 hover:text-[#0B5834] text-slate-700 text-xs font-bold transition flex items-center gap-1">
                 <span>🔒</span>
                 <span class="hidden sm:inline">Tutup Shift</span>
               </button>
 
               ${isAdmin ? `
-              <button id="nav-btn-cms" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-sm transition flex items-center gap-1">
+              <button id="nav-btn-cms" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#FEDE00] hover:bg-amber-400 text-[#0B5834] text-xs font-black shadow-sm transition flex items-center gap-1 border border-[#0B5834]/20">
                 <span>⚙️</span>
                 <span>CMS & Tema</span>
               </button>` : ''}
 
               <!-- User Badge & Logout -->
               <div class="flex items-center gap-1 pl-1 border-l border-slate-200">
-                <span class="text-xs font-bold text-emerald-900 hidden lg:inline max-w-[120px] truncate">${staffName}</span>
-                <button id="nav-btn-logout" title="Keluar / Logout" class="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition">
+                <span class="text-xs font-bold text-[#0B5834] hidden lg:inline max-w-[120px] truncate">${staffName}</span>
+                <button id="nav-btn-logout" title="Keluar / Logout" class="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-[#E31E24] hover:bg-red-50 transition">
                   <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                   </svg>
@@ -213,7 +216,7 @@ export class PosView {
     return this.products.categories.map(cat => {
       const isActive = this.products.selectedCategory === cat;
       return `
-        <button type="button" class="cat-pill px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all ${isActive ? 'bg-emerald-800 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}" data-category="${cat}">
+        <button type="button" class="cat-pill px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all ${isActive ? 'bg-[#0B5834] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}" data-category="${cat}">
           ${cat}
         </button>
       `;
@@ -242,21 +245,21 @@ export class PosView {
           <div class="w-full aspect-square rounded-xl bg-emerald-50/50 p-2 mb-2.5 overflow-hidden flex items-center justify-center relative">
             <img src="${p.image_url || 'assets/img/menu/jasmine-poci.svg'}" alt="${p.name}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200">
             ${p.badge ? `
-            <span class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-[#D9232E] text-white shadow-xs">
+            <span class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-[#E31E24] text-white shadow-xs">
               ${p.badge}
             </span>` : ''}
           </div>` : ''}
 
           <!-- Info Produk -->
           <div>
-            <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">${p.category}</span>
-            <h3 class="text-xs sm:text-sm font-black text-slate-800 line-clamp-1 group-hover:text-emerald-800 transition">${p.name}</h3>
+            <span class="text-[10px] font-bold text-[#63B846] uppercase tracking-wider">${p.category}</span>
+            <h3 class="text-xs sm:text-sm font-black text-slate-800 line-clamp-1 group-hover:text-[#0B5834] transition">${p.name}</h3>
           </div>
 
           <!-- Harga & Tombol Tambah (+) -->
           <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between">
-            <span class="text-xs sm:text-sm font-black text-emerald-900">${this.formatRp(p.price)}</span>
-            <button type="button" class="btn-add-item w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-black text-base flex items-center justify-center shadow-xs transition">
+            <span class="text-xs sm:text-sm font-black text-[#0B5834]">${this.formatRp(p.price)}</span>
+            <button type="button" class="btn-add-item w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#0B5834] hover:bg-[#074025] text-white font-black text-base flex items-center justify-center shadow-xs transition">
               +
             </button>
           </div>
@@ -271,13 +274,13 @@ export class PosView {
     return `
       <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
         <div class="flex items-center gap-2">
-          <span class="text-base font-black text-emerald-900">Pesanan Aktif</span>
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
+          <span class="text-base font-black text-[#0B5834]">Pesanan Aktif</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#FEDE00] text-[#0B5834]">
             ${this.tx.getTotalItems()} Cup
           </span>
         </div>
         ${this.tx.cart.length > 0 ? `
-        <button id="btn-clear-cart" class="text-[11px] font-bold text-red-600 hover:text-red-700">Kosongkan</button>
+        <button id="btn-clear-cart" class="text-[11px] font-bold text-[#E31E24] hover:text-red-700">Kosongkan</button>
         ` : ''}
       </div>
 
@@ -310,8 +313,8 @@ export class PosView {
         <div class="flex-1 min-w-0">
           <h4 class="text-xs font-black text-slate-800 truncate">${item.name}</h4>
           <div class="flex items-center gap-1.5 mt-0.5">
-            <span class="text-[11px] font-bold text-emerald-800">${this.formatRp(item.price)}</span>
-            <button type="button" class="btn-edit-note text-[10px] text-slate-500 hover:text-emerald-700 bg-white px-1.5 py-0.5 rounded border border-slate-200 truncate max-w-[130px]" data-index="${idx}">
+            <span class="text-[11px] font-bold text-[#0B5834]">${this.formatRp(item.price)}</span>
+            <button type="button" class="btn-edit-note text-[10px] text-slate-500 hover:text-[#0B5834] bg-white px-1.5 py-0.5 rounded border border-slate-200 truncate max-w-[130px]" data-index="${idx}">
               ✏️ ${item.notes || 'Catatan'}
             </button>
           </div>
@@ -321,7 +324,7 @@ export class PosView {
         <div class="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200">
           <button type="button" class="btn-qty-minus w-6 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center" data-index="${idx}">-</button>
           <span class="text-xs font-black text-slate-800 w-5 text-center">${item.qty}</span>
-          <button type="button" class="btn-qty-plus w-6 h-6 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs flex items-center justify-center" data-index="${idx}">+</button>
+          <button type="button" class="btn-qty-plus w-6 h-6 rounded-lg bg-[#0B5834] hover:bg-[#074025] text-white font-black text-xs flex items-center justify-center" data-index="${idx}">+</button>
         </div>
 
         <!-- Subtotal -->
@@ -345,17 +348,17 @@ export class PosView {
           <span class="font-bold text-slate-800">${this.formatRp(subtotal)}</span>
         </div>
         ${discount > 0 ? `
-        <div class="flex justify-between text-red-600">
+        <div class="flex justify-between text-[#E31E24]">
           <span>Diskon Promosi</span>
           <span class="font-bold">-${this.formatRp(discount)}</span>
         </div>` : ''}
         <div class="flex justify-between items-baseline pt-2 border-t border-slate-100 text-sm">
           <span class="font-black text-slate-800 uppercase">Total Bayar</span>
-          <span class="text-base font-black text-emerald-800">${this.formatRp(total)}</span>
+          <span class="text-base font-black text-[#0B5834]">${this.formatRp(total)}</span>
         </div>
       </div>
 
-      <button id="btn-open-checkout" ${this.tx.cart.length === 0 ? 'disabled' : ''} class="w-full py-3.5 px-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 disabled:shadow-none text-white font-black text-sm tracking-wide shadow-lg shadow-emerald-800/25 active:scale-[0.98] transition flex items-center justify-center gap-2">
+      <button id="btn-open-checkout" ${this.tx.cart.length === 0 ? 'disabled' : ''} class="w-full py-3.5 px-4 rounded-2xl bg-[#0B5834] hover:bg-[#074025] disabled:bg-slate-300 disabled:shadow-none text-white font-black text-sm tracking-wide shadow-lg shadow-[#0B5834]/25 active:scale-[0.98] transition flex items-center justify-center gap-2">
         <span>LANJUT KE PEMBAYARAN</span>
         <span>➔</span>
       </button>
@@ -466,7 +469,7 @@ export class PosView {
         <!-- Tombol Konfirmasi Selesai Bayar -->
         <div class="mt-5 pt-3 border-t border-slate-100 flex gap-2">
           <button type="button" id="btn-cancel-checkout" class="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-700">Batal</button>
-          <button type="button" id="btn-confirm-payment" ${!this.tx.isCheckoutValid() ? 'disabled' : ''} class="flex-1 py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 font-black text-xs text-white uppercase tracking-wider shadow-lg shadow-emerald-800/20 active:scale-95 transition flex items-center justify-center gap-1.5">
+          <button type="button" id="btn-confirm-payment" ${!this.tx.isCheckoutValid() ? 'disabled' : ''} class="flex-1 py-3 px-4 rounded-xl bg-[#0B5834] hover:bg-[#074025] disabled:bg-slate-300 font-black text-xs text-white uppercase tracking-wider shadow-lg shadow-[#0B5834]/20 active:scale-95 transition flex items-center justify-center gap-1.5">
             <span>KONFIRMASI PEMBAYARAN & CETAK STRUK</span>
             <span>✓</span>
           </button>

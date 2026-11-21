@@ -24,28 +24,28 @@ export class LoginView {
           
           <!-- Logo & Brand Header -->
           <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 shadow-lg shadow-emerald-800/30 p-2 mb-3">
-              <img src="assets/img/logo-teh-poci.svg" alt="Logo Teh Poci" class="w-full h-full object-contain filter drop-shadow">
+            <div class="flex items-center justify-center mb-2">
+              <img src="assets/img/logo-teh-poci.png" alt="Logo Asli Teh Poci" class="w-32 sm:w-36 h-auto object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300">
             </div>
-            <h1 class="text-2xl font-black text-emerald-900 tracking-tight">${brandName.toUpperCase()}</h1>
-            <p class="text-xs font-bold text-emerald-700 mt-0.5 tracking-wider uppercase">${branchName}</p>
+            <h1 class="text-2xl font-black text-[#0B5834] tracking-tight">TEH <span class="text-[#E31E24]">POCI</span></h1>
+            <p class="text-xs font-bold text-[#63B846] mt-0.5 tracking-wider uppercase">${branchName}</p>
             <p class="text-[11px] text-slate-500">${branchSubtitle}</p>
           </div>
 
           <!-- Quick Login Preset Badges (1-Tap Switch) -->
-          <div class="mb-5 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-100">
-            <p class="text-[11px] font-bold text-emerald-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <div class="mb-5 bg-[#F8FCF9] p-3 rounded-2xl border border-emerald-100">
+            <p class="text-[11px] font-bold text-[#0B5834] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#FEDE00] border border-[#0B5834] animate-pulse"></span>
               Pilih Akses Cepat (1-Klik):
             </p>
             <div class="grid grid-cols-2 gap-2">
-              <button type="button" id="btn-preset-cashier" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:border-emerald-600 hover:text-emerald-700 active:scale-95 transition-all shadow-sm">
-                <span class="text-xs font-black text-emerald-900">Pak Riza Lahmadi</span>
-                <span class="text-[10px] text-emerald-600 font-medium">Staf Kasir Booth (PIN: 1234)</span>
+              <button type="button" id="btn-preset-cashier" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-emerald-200 text-slate-700 hover:border-[#0B5834] hover:text-[#0B5834] active:scale-95 transition-all shadow-sm">
+                <span class="text-xs font-black text-[#0B5834]">Pak Riza Lahmadi</span>
+                <span class="text-[10px] text-[#63B846] font-medium">Staf Kasir (PIN: 1234)</span>
               </button>
-              <button type="button" id="btn-preset-admin" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-amber-200 text-slate-700 hover:border-amber-600 hover:text-amber-800 active:scale-95 transition-all shadow-sm">
-                <span class="text-xs font-black text-amber-900">Pak Faik</span>
-                <span class="text-[10px] text-amber-700 font-medium">Owner / Admin (Akses Penuh)</span>
+              <button type="button" id="btn-preset-admin" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-amber-200 text-slate-700 hover:border-[#E31E24] hover:text-[#E31E24] active:scale-95 transition-all shadow-sm">
+                <span class="text-xs font-black text-[#E31E24]">Pak Faik</span>
+                <span class="text-[10px] text-amber-700 font-medium">Owner / Admin</span>
               </button>
             </div>
           </div>

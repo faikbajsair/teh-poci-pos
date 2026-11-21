@@ -41,13 +41,13 @@ export class SettingsModel {
       phone: '0812-9876-5432',
       operating_hours: '09:00 - 21:00 WIB',
       receipt_footer: 'Terima Kasih Atas Kunjungan Anda! Teh Poci Asli Segar & Nikmat.',
-      logo_url: 'assets/img/logo-teh-poci.svg',
+      logo_url: 'assets/img/logo-teh-poci.png',
 
-      // 2. Identitas Visual & Tema (Appearance Customizer)
-      primary_color: '#146C36',      // Hijau Tua Khas Poci
-      accent_color: '#55A630',       // Hijau Daun Segar
-      poci_red: '#D9232E',           // Merah Poci Logo
-      bright_yellow: '#FFD600',      // Kuning Cerah Highlight
+      // 2. Identitas Visual & Tema Khas Logo Teh Poci
+      primary_color: '#0B5834',      // Hijau Tua Perisai Es Teh Poci
+      accent_color: '#63B846',       // Hijau Daun Segar Teh Poci
+      poci_red: '#E31E24',           // Merah Kotak POCI & Teko
+      bright_yellow: '#FEDE00',      // Kuning Cerah Cap & Lis Logo
       theme_card_style: 'rounded-2xl', // 'rounded-2xl' | 'rounded-lg' | 'rounded-none'
       theme_density: 'comfortable',    // 'comfortable' | 'compact'
       show_images_in_pos: true,        // Toggle gambar produk di POS
@@ -84,10 +84,10 @@ export class SettingsModel {
    */
   applyThemeToDOM() {
     const root = document.documentElement;
-    root.style.setProperty('--color-primary', this.get('primary_color', '#146C36'));
-    root.style.setProperty('--color-accent', this.get('accent_color', '#55A630'));
-    root.style.setProperty('--color-poci-red', this.get('poci_red', '#D9232E'));
-    root.style.setProperty('--color-bright-yellow', this.get('bright_yellow', '#FFD600'));
+    root.style.setProperty('--color-primary', this.get('primary_color', '#0B5834'));
+    root.style.setProperty('--color-accent', this.get('accent_color', '#63B846'));
+    root.style.setProperty('--color-poci-red', this.get('poci_red', '#E31E24'));
+    root.style.setProperty('--color-bright-yellow', this.get('bright_yellow', '#FEDE00'));
     
     // Set Document Title
     document.title = `${this.get('brand_name', 'Teh Poci')} — ${this.get('branch_name', 'Cabang Limus Pratama')}`;

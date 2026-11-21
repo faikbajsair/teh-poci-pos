@@ -64,7 +64,8 @@ export class ShiftController {
     const html = `
       <div style="width:100%; max-width:300px; margin:0 auto; padding:16px 12px; font-family:'Courier New', monospace; font-size:11px; color:#111;">
         <div style="text-align:center; margin-bottom:10px;">
-          <div style="font-size:16px; font-weight:bold; color:#146C36;">${brandName}</div>
+          <img src="assets/img/logo-teh-poci.png" alt="Teh Poci" style="max-height:45px; margin:0 auto 6px auto; display:block;" onerror="this.style.display='none'"/>
+          <div style="font-size:16px; font-weight:bold; color:#0B5834;">${brandName}</div>
           <div style="font-size:11px; font-weight:bold;">LAPORAN TUTUP SHIFT KASIR</div>
           <div style="font-size:9px; color:#555;">${branchName}</div>
         </div>

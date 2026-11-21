@@ -35,17 +35,23 @@ export class ShiftView {
     container.innerHTML = `
       <div id="shift-root" class="min-h-screen bg-[#FAFDFB] flex flex-col pb-12">
         
+        <!-- Top Signature Tricolor Accent Bar (Kuning, Merah, Hijau Poci) -->
+        <div class="h-1.5 w-full bg-gradient-to-r from-[#FEDE00] via-[#E31E24] to-[#0B5834]"></div>
+
         <!-- Header -->
         <header class="bg-white border-b border-emerald-100 sticky top-0 z-20 shadow-xs">
-          <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <button id="btn-back-to-pos" class="p-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 font-bold text-xs flex items-center gap-1 transition">
                 <span>←</span>
                 <span>Kembali ke Kasir</span>
               </button>
-              <div>
-                <h1 class="text-base font-black text-emerald-900">Rekap Kasir & Tutup Shift Harian</h1>
-                <p class="text-xs text-slate-500">Cabang Limus Pratama Regensi • Kasir: ${staffName}</p>
+              <div class="flex items-center gap-2.5">
+                <img src="assets/img/logo-teh-poci.png" alt="Logo Teh Poci" class="h-8 w-auto object-contain">
+                <div>
+                  <h1 class="text-base font-black text-[#0B5834] leading-tight">Rekap Kasir & Tutup Shift Harian</h1>
+                  <p class="text-xs text-slate-500">Cabang Limus Pratama Regensi • Kasir: ${staffName}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -136,7 +142,7 @@ export class ShiftView {
 
             <!-- Tombol Aksi Tutup Shift -->
             <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
-              <button type="button" id="btn-submit-shift" class="flex-1 py-3.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-800/20 active:scale-95 transition flex items-center justify-center gap-2">
+              <button type="button" id="btn-submit-shift" class="flex-1 py-3.5 px-4 rounded-xl bg-[#0B5834] hover:bg-[#084428] text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-[#0B5834]/20 active:scale-95 transition flex items-center justify-center gap-2">
                 <span>SIMPAN LAPORAN TUTUP SHIFT & CETAK REKAP</span>
                 <span>🔒</span>
               </button>

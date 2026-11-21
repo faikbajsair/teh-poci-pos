@@ -22,17 +22,23 @@ export class HistoryView {
     container.innerHTML = `
       <div id="history-root" class="min-h-screen bg-[#FAFDFB] flex flex-col pb-12">
         
+        <!-- Top Signature Tricolor Accent Bar (Kuning, Merah, Hijau Poci) -->
+        <div class="h-1.5 w-full bg-gradient-to-r from-[#FEDE00] via-[#E31E24] to-[#0B5834]"></div>
+
         <!-- Header Navigasi -->
         <header class="bg-white border-b border-emerald-100 sticky top-0 z-20 shadow-xs">
-          <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <button id="btn-back-to-pos" class="p-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 font-bold text-xs flex items-center gap-1 transition">
                 <span>←</span>
                 <span>Kembali ke Kasir</span>
               </button>
-              <div>
-                <h1 class="text-base font-black text-emerald-900">Riwayat Penjualan Kasir</h1>
-                <p class="text-xs text-slate-500">Cabang Limus Pratama Regensi</p>
+              <div class="flex items-center gap-2.5">
+                <img src="assets/img/logo-teh-poci.png" alt="Logo Teh Poci" class="h-8 w-auto object-contain">
+                <div>
+                  <h1 class="text-base font-black text-[#0B5834] leading-tight">Riwayat Penjualan Kasir</h1>
+                  <p class="text-xs text-slate-500">Cabang Limus Pratama Regensi</p>
+                </div>
               </div>
             </div>
 
